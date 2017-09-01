@@ -8,7 +8,8 @@ defmodule HiveClient.SocketClient do
     GenSocketClient.start_link(
           __MODULE__,
           Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-          "ws://localhost:4000/socket/websocket"
+          #"ws://localhost:4000/socket/websocket"
+          "wss://hive.explo.org/socket/websocket"
         )
   end
 
