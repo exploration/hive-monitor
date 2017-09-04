@@ -5,11 +5,12 @@ defmodule HiveClient.SocketClient do
   @moduledoc false
 
   def start_link() do
+    token = (System.get_env("HIVE_SOCKET_TOKEN") || "nope") |> URI.encode
     GenSocketClient.start_link(
           __MODULE__,
           Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-          #"ws://localhost:4000/socket/websocket"
-          "wss://hive.explo.org/socket/websocket"
+          "ws://localhost:4000/socket/websocket?token=#{token}"
+          #"wss://hive.explo.org/socket/websocket"
         )
   end
 
@@ -25,7 +26,7 @@ defmodule HiveClient.SocketClient do
   end
 
   def handle_disconnected(reason, state) do
-    Logger.error("disconnected: #{inspect reason}")
+    Logger.error("disconnected: #{inspect reason}, #{inspect state}")
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
   end
