@@ -10,7 +10,7 @@ defmodule HiveClient.SocketClient do
           __MODULE__,
           Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
           #"ws://localhost:4000/socket/websocket?token=#{token}"
-          "wss://hive.explo.org/socket/websocket"
+          "wss://hive.explo.org/socket/websocket?token=#{token}"
         )
   end
 
