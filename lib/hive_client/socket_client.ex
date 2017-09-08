@@ -1,5 +1,6 @@
 defmodule HiveClient.SocketClient do
   alias Phoenix.Channels.GenSocketClient
+  import HiveClient.Router, only: [route: 1]
   require Logger
   @behaviour GenSocketClient
   @moduledoc false
@@ -17,7 +18,6 @@ defmodule HiveClient.SocketClient do
   def init(url) do
     {:connect, url, %{}}
   end
-
 
   def handle_connected(transport, state) do
     Logger.info("connected")
@@ -49,7 +49,7 @@ defmodule HiveClient.SocketClient do
 
   def handle_message("atom:create", "created", payload, _transport, state) do
     Logger.info("ATOM created: #{inspect payload}")
-    System.cmd "/usr/bin/osascript", ["-e", "display dialog \"New data received!\nApplication: #{payload["application"]}\nContext: #{payload["context"]}\nProcess: #{payload["process"]}\""]
+    route(payload)
     {:ok, state}
   end
   def handle_message(topic, event, payload, _transport, state) do
