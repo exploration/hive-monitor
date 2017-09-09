@@ -48,7 +48,6 @@ defmodule HiveClient.SocketClient do
   end
 
   def handle_message("atom:create", "created", payload, _transport, state) do
-    Logger.info("ATOM created: #{inspect payload}")
     route(payload)
     {:ok, state}
   end
