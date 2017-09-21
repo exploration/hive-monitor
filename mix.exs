@@ -19,7 +19,9 @@ defmodule HiveClient.Mixfile do
     [
       mod: {HiveClient, []},
       applications: [
-       :phoenix_gen_socket_client, :websocket_client
+       :phoenix_gen_socket_client,
+       :websocket_client,
+       :httpotion
       ]
     ]
   end
@@ -36,7 +38,8 @@ defmodule HiveClient.Mixfile do
       {:phoenix_gen_socket_client, "~> 1.2.0"},
       {:websocket_client, github: "sanmiguel/websocket_client"},
       {:poison, "~> 3.1"},
-      {:phoenix, "~> 1.3"}
+      {:phoenix, "~> 1.3"},
+      {:httpotion, "~> 3.0.2"}
     ]
   end
 end
