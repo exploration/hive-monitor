@@ -54,15 +54,14 @@ defmodule HiveClient.Router do
     triplet matches.
   """
   def route(atom) when is_map(atom) do
-    Logger.info("ATOM received: #{inspect atom}")
-
     triplet = {atom["application"], atom["context"], atom["process"]}
 
     case Map.fetch(@known_triplets, triplet) do
       {:ok, module} ->
-        apply(module, :handle_atom, [atom])
+        Logger.info("ATOM received (#{atom["application"]},#{atom["context"]},#{atom["process"]}), routing to #{to_string module}")
+        Task.start_link(module, :handle_atom, [atom])
       :error -> 
-        apply(GenericHandler, :handle_atom, [atom])
+        Task.start_link(GenericHandler, :handle_atom, [atom])
     end
   end
 end
