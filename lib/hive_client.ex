@@ -8,12 +8,24 @@ defmodule HiveClient do
 
     children = [
       # Start the endpoint when the application starts
-      worker(HiveClient.SocketClient, [])
+      worker(HiveClient.SocketClient, []),
+
+      # Also start any "cron" tasks we want to run concurrent with Atom synching
+      cron_child("/bin/echo", ["ping"], :timer.seconds(60), true, "test1"),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: HiveClient.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp cron_child(cmd, args, rate, run_on_start, id) do
+    Supervisor.child_spec( { HiveClient.CronServer, 
+        %HiveClient.CronServer.State{ 
+            cmd: cmd, args: args, rate: rate, run_on_start: run_on_start} 
+        }, 
+        id: id
+    )
   end
 end
