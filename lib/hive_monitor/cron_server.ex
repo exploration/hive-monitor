@@ -1,4 +1,4 @@
-defmodule HiveClient.CronServer do
+defmodule HiveMonitor.CronServer do
   use GenServer
 
   defmodule State do

@@ -1,7 +1,7 @@
-defmodule HiveClient.Router do
-  alias HiveClient.FMHandler
-  alias HiveClient.GenericHandler
-  alias HiveClient.PortalHandler
+defmodule HiveMonitor.Router do
+  alias HiveMonitor.FMHandler
+  alias HiveMonitor.GenericHandler
+  alias HiveMonitor.PortalHandler
   require Logger
 
   # Put yer triplets here as you add new systems

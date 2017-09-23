@@ -1,4 +1,4 @@
-defmodule HiveClient.GenericHandler do
+defmodule HiveMonitor.GenericHandler do
   @hipchat_api_url "https://api.hipchat.com/v2"
   @hipchat_room "143945"
   @hipchat_token "AwS0F1sbBYlPPSJOWwITASwr7yslZBi9sVxJI10S"

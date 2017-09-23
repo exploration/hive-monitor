@@ -1,6 +1,6 @@
-defmodule HiveClient.SocketClient do
+defmodule HiveMonitor.SocketClient do
   alias Phoenix.Channels.GenSocketClient
-  import HiveClient.Router, only: [route: 1]
+  import HiveMonitor.Router, only: [route: 1]
   require Logger
   @behaviour GenSocketClient
   @moduledoc false

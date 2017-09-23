@@ -1,4 +1,4 @@
-defmodule HiveClient.FMHandler do
+defmodule HiveMonitor.FMHandler do
   @script_name "pub - receive new atom from HIVE (atom_json)"
   @server_url "fmp://minerva.explo.org/hive_data"
   
