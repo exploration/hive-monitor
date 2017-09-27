@@ -10,7 +10,7 @@ defmodule HiveMonitor.CronServer do
 
   # client code
   def start_link(state \\ %State{}) do
-    GenServer.start(__MODULE__, state)
+    GenServer.start_link(__MODULE__, state)
   end
 
 
