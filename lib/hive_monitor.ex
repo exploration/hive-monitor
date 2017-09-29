@@ -9,6 +9,7 @@ defmodule HiveMonitor do
     children = [
       # Start the endpoint when the application starts
       worker(HiveMonitor.SocketClient, []),
+      worker(HiveMonitor.Router, []),
 
       # Also start any "cron" tasks we want to run concurrent with Atom synching
       cron_child("/bin/echo", ["ping"], :timer.seconds(60), true, "test1"),
