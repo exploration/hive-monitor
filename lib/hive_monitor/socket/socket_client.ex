@@ -19,6 +19,17 @@ defmodule HiveMonitor.SocketClient do
     {:connect, url, %{}}
   end
 
+  def child_spec(_opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, []},
+      type: :worker,
+      restart: :permanent,
+      shutdown: 500
+    }
+  end
+
+
   def handle_connected(transport, state) do
     Logger.info("connected")
     GenSocketClient.join(transport, "atom:create")
