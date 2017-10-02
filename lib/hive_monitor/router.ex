@@ -1,67 +1,98 @@
 defmodule HiveMonitor.Router do
-  alias HiveMonitor.FMHandler
   alias HiveMonitor.GenericHandler
-  alias HiveMonitor.PortalHandler
   require Logger
 
-  # Put yer triplets here as you add new systems
-  @known_triplets %{
-    {"portico", "bus_route", "update"} => PortalHandler,
-    {"portico", "course", "update"} => PortalHandler,
-    {"portico", "user", "update"} => PortalHandler,
-    {"portal_production","ambassador","update"} => FMHandler,
-    {"portal_production","arrival","update"} => FMHandler,
-    {"portal_production","bus_form","update"} => FMHandler,
-    {"portal_production","campdoc","complete"} => FMHandler,
-    {"portal_production","course","update"} => FMHandler,
-    {"portal_production","departure","update"} => FMHandler,
-    {"portal_production","housing","update"} => FMHandler,
-    {"portal_production","mini_course","update"} => FMHandler,
-    {"portal_production","parent_eval","update"} => FMHandler,
-    {"portal_production","photo_id","update"} => FMHandler,
-    {"portal_production","student_tech","update"} => FMHandler,
-    {"portal_production","POR.AUTHVIS","complete"} => FMHandler,
-    {"portal_production","WV.BATTLEGROUNDZ.WELL","complete"} => FMHandler,
-    {"portal_production","WV.BERKSHIRE.WELL","complete"} => FMHandler,
-    {"portal_production","WV.BIKETOUR.WELL","complete"} => FMHandler,
-    {"portal_production","WV.BIKETOUR.YALE","complete"} => FMHandler,
-    {"portal_production","WV.BOSTON.YALE","complete"} => FMHandler,
-    {"portal_production","WV.BROWNSTONE.YALE","complete"} => FMHandler,
-    {"portal_production","WV.FOODBANK.YALE","complete"} => FMHandler,
-    {"portal_production","WV.GLASSBLOWING.WELL","complete"} => FMHandler,
-    {"portal_production","WV.GOKARTS.WELL","complete"} => FMHandler,
-    {"portal_production","WV.KAYAK.WELL","complete"} => FMHandler,
-    {"portal_production","WV.PAINTBALL.WELL","complete"} => FMHandler,
-    {"portal_production","WV.PAINTBALL.YALE","complete"} => FMHandler,
-    {"portal_production","WV.PARKOUR.WHEA","complete"} => FMHandler,
-    {"portal_production","WV.RAFTING.YALE","complete"} => FMHandler,
-    {"portal_production","WV.REALITYGAMING.WELL","complete"} => FMHandler,
-    {"portal_production","WV.RIVERKAYAKING.YALE","complete"} => FMHandler,
-    {"portal_production","WV.ROCKCLIMBING.WELL","complete"} => FMHandler,
-    {"portal_production","WV.ROCKCLIMBING.WHEA","complete"} => FMHandler,
-    {"portal_production","WV.SKYDIVING.WELL","complete"} => FMHandler,
-    {"portal_production","WV.SKYDIVING.WHEA","complete"} => FMHandler,
-    {"portal_production","WV.TRAPEZE.WELL","complete"} => FMHandler,
-    {"portal_production","WV.TRAPEZE.WHEA","complete"} => FMHandler,
-    {"portal_production","WV.TREETOP.WELL","complete"} => FMHandler,
-    {"portal_production","WV.TREETOP.WHEA","complete"} => FMHandler,
-    {"portal_production","WV.ZIPLINE.YALE","complete"} => FMHandler
-  }
+  use GenServer
+
+  #----------------#
+  # Client Methods #
+  #----------------#
+  
+  def start_link(_args) do
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  end
 
   @doc """
-    Checks atom triplet against a known map of handlers (`@known_triplets`). 
+    Add a new handler to the HIVEMonitor system on-the-fly
+
+    Example:
+
+        HiveMonitor.Router.add_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
+  """
+  def add_handler(triplet, handler) do
+    GenServer.call(__MODULE__, {:add_handler, triplet, handler})
+  end
+
+  @doc """
+    Stop handling the given triplet with the given handler on-the-fly
+
+    Example:
+
+        HiveMonitor.Router.remove_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
+  """
+  def remove_handler(triplet, handler) do
+    GenServer.call(__MODULE__, {:remove_handler, triplet, handler})
+  end
+
+
+  @doc """
+    Checks atom triplet against a known map of handlers (`@known_triplets`).
     Passes the atom to the `handle_atom` method of the relevant handler if the
     triplet matches.
+
+    This path is usually triggered automatically from the SocketClient
   """
   def route(atom) when is_map(atom) do
+    GenServer.cast(__MODULE__, {:route, atom})
+  end
+
+
+  #----------------#
+  # Server Methods #
+  #----------------#
+
+  # The state that this server contains is "known triplets" from HIVE
+  def init(:ok) do
+    known_triplets = Application.get_env(:hive_monitor, :known_triplets) || %{}
+
+    {:ok, known_triplets}
+  end
+
+
+  def handle_call({:add_handler, triplet, handler}, _from, known_triplets) do
+    new_state = Map.update(known_triplets, triplet, [handler], fn(handler_list) ->
+      case Enum.find(handler_list, fn(v) -> v == handler end) do
+        nil -> [handler | handler_list]
+        _ -> handler_list
+      end
+    end)
+
+    {:reply, new_state, new_state}
+  end
+
+  def handle_call({:remove_handler, triplet, handler}, _from, known_triplets) do
+    new_state = Map.update(known_triplets, triplet, [], fn(handler_list) ->
+      List.delete handler_list, handler
+    end)
+
+    {:reply, new_state, new_state}
+  end
+
+
+  def handle_cast({:route, atom}, known_triplets) do
     triplet = {atom["application"], atom["context"], atom["process"]}
 
-    case Map.fetch(@known_triplets, triplet) do
-      {:ok, module} ->
-        Logger.info("ATOM received (#{atom["application"]},#{atom["context"]},#{atom["process"]}), routing to #{to_string module}")
-        Task.start_link(module, :handle_atom, [atom])
+    case Map.fetch(known_triplets, triplet) do
+      {:ok, module_list} ->
+        Enum.each(module_list, fn(module) ->
+          Logger.info("ATOM received (#{atom["application"]},#{atom["context"]},#{atom["process"]}), routing to #{to_string module}")
+          Task.start_link(module, :handle_atom, [atom])
+        end)
       :error -> 
         Task.start_link(GenericHandler, :handle_atom, [atom])
     end
+
+    {:noreply, known_triplets}
   end
+  
 end
