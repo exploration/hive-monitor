@@ -86,6 +86,12 @@ defmodule HiveMonitor.Router do
       List.delete handler_list, handler
     end)
 
+    new_state = 
+      case Map.fetch(new_state, triplet) do
+        {:ok, []} -> Map.delete(new_state, triplet)
+        _ -> new_state
+      end
+
     {:reply, new_state, new_state}
   end
 
