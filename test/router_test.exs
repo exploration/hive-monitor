@@ -61,4 +61,21 @@ defmodule RouterTest do
     end
   end
 
+
+  describe "Test routing: " do
+    test "Routing an atom returns a list of task PIDs", %{atom: atom} do
+      pid_list = Router.route(atom)
+      assert is_list pid_list
+      assert is_pid List.first(pid_list)
+    end
+
+    test "Routing to an atom with x handlers returns a pid_list of length x", %{atom: atom, triplet: triplet, handler: handler, test_handler: test_handler} do
+      Router.add_handler(triplet, handler)
+      Router.add_handler(triplet, test_handler)
+
+      pid_list = Router.route(atom)
+      assert Enum.count(pid_list) == 2
+    end
+  end
+
 end
