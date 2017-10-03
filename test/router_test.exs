@@ -24,6 +24,10 @@ defmodule RouterTest do
   end
 
   describe "Test adding + removing handlers: " do
+    test "Known triplets is a map" do
+      assert is_map Router.known_triplets()
+    end
+
     test "Known triplets is returned by add_handler and remove_handler", %{triplet: triplet, handler: handler} do
 
       added_triplets = Router.add_handler(triplet, handler)
