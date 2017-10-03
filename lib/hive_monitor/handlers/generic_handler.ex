@@ -4,7 +4,7 @@ defmodule HiveMonitor.GenericHandler do
   @hipchat_token "AwS0F1sbBYlPPSJOWwITASwr7yslZBi9sVxJI10S"
   @recipients ["Donald"]
 
-  # The generic case is that we
+  # The generic case is that we send the atom to HipChat
   def handle_atom(atom) when is_map(atom) do
     message = "Generic Handler got the atom: (#{atom["application"]}, #{atom["context"]}, #{atom["process"]})"
     IO.puts message
