@@ -50,7 +50,7 @@ defmodule HiveMonitor.Router do
     This path is usually triggered automatically from the SocketClient
   """
   def route(atom) when is_map(atom) do
-    GenServer.cast(__MODULE__, {:route, atom})
+    GenServer.call(__MODULE__, {:route, atom})
   end
 
 
@@ -96,20 +96,23 @@ defmodule HiveMonitor.Router do
   end
 
 
-  def handle_cast({:route, atom}, known_triplets) do
+  def handle_call({:route, atom}, _from, known_triplets) do
     triplet = {atom["application"], atom["context"], atom["process"]}
 
-    case Map.fetch(known_triplets, triplet) do
-      {:ok, module_list} ->
-        Enum.each(module_list, fn(module) ->
-          Logger.info("ATOM received (#{atom["application"]},#{atom["context"]},#{atom["process"]}), routing to #{to_string module}")
-          Task.start_link(module, :handle_atom, [atom])
-        end)
-      :error -> 
-        Task.start_link(GenericHandler, :handle_atom, [atom])
-    end
+    pid_list = 
+      case Map.fetch(known_triplets, triplet) do
+        {:ok, module_list} ->
+          Enum.map(module_list, fn(module) ->
+            Logger.info("ATOM received (#{atom["application"]},#{atom["context"]},#{atom["process"]}), routing to #{to_string module}")
+            {:ok, pid} = Task.start_link(module, :handle_atom, [atom])
+            pid
+          end)
+        :error -> 
+          {:ok, pid} = Task.start_link(GenericHandler, :handle_atom, [atom])
+          [ pid ]
+      end
 
-    {:noreply, known_triplets}
+    {:reply, pid_list, known_triplets}
   end
   
 end
