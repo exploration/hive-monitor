@@ -24,6 +24,13 @@ defmodule HiveMonitor.Router do
   end
 
   @doc """
+    Returns all known triplets, along with the list of any handlers associated with each triplet, as a map.
+  """
+  def known_triplets() do
+    GenServer.call(__MODULE__, {:known_triplets})
+  end
+
+  @doc """
     Stop handling the given triplet with the given handler on-the-fly
 
     Example:
@@ -68,6 +75,10 @@ defmodule HiveMonitor.Router do
     end)
 
     {:reply, new_state, new_state}
+  end
+
+  def handle_call({:known_triplets}, _from, known_triplets) do
+    {:reply, known_triplets, known_triplets}
   end
 
   def handle_call({:remove_handler, triplet, handler}, _from, known_triplets) do
