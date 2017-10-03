@@ -10,6 +10,10 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+# The default configuration of the HIVE monitor is to run as a "server" to
+# handle realtime inputs between Explo's various web systems (Portico, Portal,
+# etc.). If you're using the HIVE monitor in other environments, you'll want to
+# configure your handlers here.
 config :hive_monitor, known_triplets: %{
     {"portico", "bus_route", "update"} => [HiveMonitor.PortalHandler],
     {"portico", "course", "update"} => [HiveMonitor.PortalHandler],
