@@ -1,4 +1,6 @@
 defmodule HiveMonitor.PortalHandler do
+  @behaviour HiveMonitor.Handler
+
   @portal_token 'dd674122358db45f7a1f76e11328ed20'
   @portal_url 'https://portal.explo.org/hive/incoming_atoms'
   #@portal_url 'http://localhost:3000/hive/incoming_atoms'
@@ -11,5 +13,7 @@ defmodule HiveMonitor.PortalHandler do
         "Content-Type": "application/x-www-form-urlencoded"
     ]
     HTTPotion.post @portal_url, [body: body, headers: headers]
+
+    true
   end
 end
