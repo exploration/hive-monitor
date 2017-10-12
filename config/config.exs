@@ -15,6 +15,7 @@ config :logger, :console,
 # etc.). If you're using the HIVE monitor in other environments, you'll want to
 # configure your handlers here.
 config :hive_monitor, known_triplets: %{
+    {"facapp", "user", "update"} => [HiveMonitor.FacAppHandler],
     {"portico", "bus_route", "update"} => [HiveMonitor.PortalHandler],
     {"portico", "course", "update"} => [HiveMonitor.PortalHandler],
     {"portico", "user", "update"} => [HiveMonitor.PortalHandler],
