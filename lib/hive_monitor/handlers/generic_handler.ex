@@ -12,7 +12,7 @@ defmodule HiveMonitor.GenericHandler do
     IO.puts message
 
     body = "from=HIVE Monitor&format=text&notify=true&message=#{format_recipients()} #{message}"
-      |> URI.encode
+      |> URI.encode_www_form
     headers = [
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": "Bearer #{@hipchat_token}"

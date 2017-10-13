@@ -7,4 +7,10 @@ defmodule HiveMonitor.Handler do
 
   @doc "Take an atom from HIVE in realtime, and send it somewhere else."
   @callback handle_atom(map) :: boolean
+
+  def encode_params(map) when is_map(map) do
+    map
+    |> Poison.encode!
+    |> URI.encode_www_form
+  end
 end

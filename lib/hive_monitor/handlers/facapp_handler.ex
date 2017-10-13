@@ -1,11 +1,13 @@
 defmodule HiveMonitor.FacAppHandler do
-  @behaviour HiveMonitor.Handler
+  alias HiveMonitor.Handler
+  @behaviour Handler
 
   @api_token '29797ffedcfbfb0e855d19972ae1656d1b8d5dbcf9602a59823fa688e'
   @api_url 'http://facapp.lab.explo.org/hive/incoming_atoms'
+  #@api_url 'http://localhost:3000/hive/incoming_atoms'
 
   def handle_atom(atom) when is_map(atom) do
-    atom_json = "#{atom |> Poison.encode! |> URI.encode}"
+    atom_json = Handler.encode_params(atom)
     body = "atom=#{atom_json}&api_token=#{@api_token}"
     headers = [
         "User-Agent": "HIVE Monitor",
@@ -16,4 +18,3 @@ defmodule HiveMonitor.FacAppHandler do
     true
   end
 end
-

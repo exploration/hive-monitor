@@ -1,5 +1,6 @@
 defmodule HiveMonitor.FMHandler do
-  @behaviour HiveMonitor.Handler
+  alias HiveMonitor.Handler
+  @behaviour Handler
 
   @script_name "pub - receive new atom from HIVE (atom_json)"
   @server_url "fmp://minerva.explo.org/hive_data"
@@ -11,7 +12,7 @@ defmodule HiveMonitor.FMHandler do
   def handle_atom(atom) when is_map(atom) do
     url = "#{@server_url}" <>
       "?script=#{URI.encode(@script_name)}" <>
-      "&param=#{atom |> Poison.encode! |> URI.encode}"
+      "&param=#{Handler.encode_params(atom)}"
     System.cmd "/usr/bin/open", [url]
 
     true
