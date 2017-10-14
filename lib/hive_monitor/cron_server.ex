@@ -1,6 +1,18 @@
 defmodule HiveMonitor.CronServer do
-  use GenServer
   require Logger
+  use GenServer
+
+  @moduledoc """
+    The CronServer is an attempt to consolidate all HIVE-related chores into
+    this one HiveMonitor zone. Typically in a HIVE system, you'll have certain
+    chores like shell scripts, remote triggers, etc. that need to be run on a
+    periodic timer (because not everything can be fully realtime eg. in
+    FileMaker systems). 
+    
+    The idea is that you make shell scripts or other
+    system scripts to run the periodic maintenance tasks, and then you can run
+    them periodically using this CronServer.  
+  """
 
   defmodule Cron do
     @enforce_keys [:name, :cmd, :args, :rate]
@@ -11,26 +23,49 @@ defmodule HiveMonitor.CronServer do
         ref: nil
   end
 
+
   #----------------#
   # Client Methods #
   #----------------#
   
+  @doc """
+    Starts the CronServer running. You don't typically need to do this by hand.
+    You can't pass methods to this server, instead use the :hive_monitor
+    :crons config variable to send them in.
+  """
   def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  @doc """
+    Add a new Cron. Send it a %Cron{} struct with a unique name, and it'll be
+    happy.
+  """
   def add_cron(cron) do
     GenServer.call(__MODULE__, {:add_cron, cron})
   end
 
+  @doc """
+    Delete a Cron (by name) from the list of running Crons (and cancel its
+    timer).
+  """
   def delete_cron(name) do
     GenServer.call(__MODULE__, {:delete_cron, name})
   end
 
+  @doc """
+    Update a Cron's timer (by name and rate in ms).
+
+    Pro tip: Use :timer.seconds() / :timer.minutes() etc. as a convenience
+    method so you don't have to do manual millisecond math.
+  """
   def update_rate(name, rate) do
     GenServer.call(__MODULE__, {:update_rate, name, rate})
   end
 
+  @doc """
+    Returns a list of all Cron (structs) currently running.
+  """
   def list_crons() do
     GenServer.call(__MODULE__, :list_crons)
   end
@@ -91,6 +126,7 @@ defmodule HiveMonitor.CronServer do
         end
     end
   end
+
 
 
   defp cancel_timer(cron) do
