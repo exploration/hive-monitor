@@ -15,7 +15,7 @@ defmodule HiveMonitor.CronServer do
   """
 
   defmodule Cron do
-    @enforce_keys [:name, :cmd, :args, :rate]
+    @enforce_keys [:name]
     defstruct name: nil,
         cmd: "/bin/echo",
         args: ["hello world"],
