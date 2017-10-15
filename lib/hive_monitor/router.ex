@@ -1,7 +1,6 @@
 defmodule HiveMonitor.Router do
   alias HiveMonitor.GenericHandler
   require Logger
-
   use GenServer
 
   #----------------#
@@ -31,7 +30,7 @@ defmodule HiveMonitor.Router do
   end
 
   @doc """
-    Stop handling the given triplet with the given handler on-the-fly
+    Stop handling the given triplet with the given handler.
 
     Example:
 
@@ -47,7 +46,7 @@ defmodule HiveMonitor.Router do
     Passes the atom to the `handle_atom` method of the relevant handler if the
     triplet matches.
 
-    This path is usually triggered automatically from the SocketClient
+    This path is usually triggered automatically from the SocketClient.
   """
   def route(atom) when is_map(atom) do
     GenServer.call(__MODULE__, {:route, atom})

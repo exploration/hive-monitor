@@ -40,12 +40,14 @@ defmodule RouterTest do
       assert removed_triplets == known_triplets
     end
 
-    test "Adding a handler modifies known triplets with a new entry", %{triplet: triplet, handler: handler} do
+    test "Adding a handler modifies known triplets with a new entry", %{handler: handler} do
+      triplet = {"router_test","handler","modifies_known_triplets_test"}
       added_triplets = Router.add_handler(triplet, handler)
-      assert {:ok, [HiveMonitor.GenericHandler]} == Map.fetch(added_triplets, triplet)
+      assert {:ok, [handler]} == Map.fetch(added_triplets, triplet)
     end
     
-    test "Removing a unique handler removes the triplet from known_triplets", %{triplet: triplet, handler: handler} do
+    test "Removing a unique handler removes the triplet from known_triplets", %{handler: handler} do
+      triplet = {"router_test","handler","remove_unique_test"}
       Router.add_handler(triplet, handler)
       known_triplets = Router.remove_handler(triplet, handler)
 

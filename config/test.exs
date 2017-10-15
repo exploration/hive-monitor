@@ -1,4 +1,5 @@
 use Mix.Config
 
-# Print only warnings and errors during test
 config :logger, level: :warn
+config :hive_monitor, crons: []
+config :hive_monitor, known_triplets: %{}
