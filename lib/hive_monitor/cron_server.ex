@@ -40,6 +40,8 @@ defmodule HiveMonitor.CronServer do
   @doc """
     Add a new Cron. Send it a %Cron{} struct with a unique name, and it'll be
     happy.
+
+    Returns the Cron, with an updated timer reference, on success. Returns {:error, "description"} otherwise.
   """
   def add_cron(cron) do
     GenServer.call(__MODULE__, {:add_cron, cron})
@@ -48,6 +50,9 @@ defmodule HiveMonitor.CronServer do
   @doc """
     Delete a Cron (by name) from the list of running Crons (and cancel its
     timer).
+
+    Returns the list of running Crons, on success or failure. If it was
+    successful, the named Cron will be missing from the returned state :)
   """
   def delete_cron(name) do
     GenServer.call(__MODULE__, {:delete_cron, name})
@@ -55,6 +60,9 @@ defmodule HiveMonitor.CronServer do
 
   @doc """
     Update a Cron's timer (by name and rate in ms).
+
+    Returns the updated Cron struct on success, and {:error, "description"}
+    otherwise.
 
     Pro tip: Use :timer.seconds() / :timer.minutes() etc. as a convenience
     method so you don't have to do manual millisecond math.
@@ -129,17 +137,33 @@ defmodule HiveMonitor.CronServer do
 
 
 
+  @doc """
+    Cancel the Erlang timer for the given Cron (if there is a proper timer reference)
+
+    See http://erlang.org/doc/man/timer.html for details
+  """
   defp cancel_timer(cron) do
     case cron.ref do
-      nil -> {:error, "no reference found"}
-      ref -> :timer.cancel({:interval, ref})
+      nil -> {:error, "no timer reference found"}
+      ref -> :timer.cancel(ref_to_tref(ref))
     end
   end
 
+  @doc """
+    Erlang timer functions return TRefs. This function will convert the timer reference into the proper format to be compatible with Erlang's Timer library.
+
+    See http://erlang.org/doc/man/timer.html for details
+  """
+  def ref_to_tref(reference) do
+    {:interval, reference}
+  end
+
+  @doc "Search the state for a Cron matching the given name"
   defp find_name(state, name) do
     Enum.find(state, :no_match, fn(cron) -> cron.name == name end)
   end
 
+  @doc "Same as find_name, but return the index of the matching Cron"
   defp find_name_index(state, name) do
     case Enum.find_index(state, fn(cron) -> cron.name == name end) do
       nil -> :no_match
@@ -154,6 +178,12 @@ defmodule HiveMonitor.CronServer do
     end
   end
 
+  @doc """
+    Activate the timer for the given Cron using the Erlang :timer library. Only
+    activates the timer if there is no current timer reference.
+
+    See http://erlang.org/doc/man/timer.html for details
+  """
   defp set_timer(cron) do
     case cron.ref do
       nil -> 
