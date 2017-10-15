@@ -9,7 +9,6 @@ defmodule CronServerTest do
 
   describe "Cron CRUD" do
     test "Crons state is a list of Crons", %{cron_name: cron_name} do
-      IO.inspect CronServer.list_crons()
       CronServer.add_cron(%Cron{name: cron_name})
       crons_list = CronServer.list_crons()
       assert is_list(crons_list)
