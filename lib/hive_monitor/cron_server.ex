@@ -155,9 +155,13 @@ defmodule HiveMonitor.CronServer do
   end
 
   defp set_timer(cron) do
-    Logger.info "CronServer refresh #{cron.name} every #{cron.rate / 1000}s: #{cron.cmd} #{cron.args}"
-    {:ok, {:interval, ref}} = :timer.apply_interval(
-        cron.rate, System, :cmd, [cron.cmd, cron.args])
-    %{cron | ref: ref}
+    case cron.ref do
+      nil -> 
+        Logger.info "CronServer refresh #{cron.name} every #{cron.rate / 1000}s: #{cron.cmd} #{cron.args}"
+        {:ok, ref_to_tref(ref)} = :timer.apply_interval(
+            cron.rate, System, :cmd, [cron.cmd, cron.args])
+        %{cron | ref: ref}
+      _ -> cron
+    end
   end
 end
