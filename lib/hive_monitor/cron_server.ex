@@ -137,11 +137,9 @@ defmodule HiveMonitor.CronServer do
 
 
 
-  @doc """
-    Cancel the Erlang timer for the given Cron (if there is a proper timer reference)
-
-    See http://erlang.org/doc/man/timer.html for details
-  """
+  # Cancel the Erlang timer for the given Cron (if there is a proper timer
+  # reference)
+  # See http://erlang.org/doc/man/timer.html for details
   defp cancel_timer(cron) do
     case cron.ref do
       nil -> {:error, "no timer reference found"}
@@ -149,21 +147,18 @@ defmodule HiveMonitor.CronServer do
     end
   end
 
-  @doc """
-    Erlang timer functions return TRefs. This function will convert the timer reference into the proper format to be compatible with Erlang's Timer library.
-
-    See http://erlang.org/doc/man/timer.html for details
-  """
-  def ref_to_tref(reference) do
+  # Erlang timer functions return TRefs. This function will convert the timer reference into the proper format to be compatible with Erlang's Timer library.
+  # See http://erlang.org/doc/man/timer.html for details
+  defp ref_to_tref(reference) do
     {:interval, reference}
   end
 
-  @doc "Search the state for a Cron matching the given name"
+  # Search the state for a Cron matching the given name
   defp find_name(state, name) do
     Enum.find(state, :no_match, fn(cron) -> cron.name == name end)
   end
 
-  @doc "Same as find_name, but return the index of the matching Cron"
+  # Same as find_name, but return the index of the matching Cron
   defp find_name_index(state, name) do
     case Enum.find_index(state, fn(cron) -> cron.name == name end) do
       nil -> :no_match
@@ -178,12 +173,9 @@ defmodule HiveMonitor.CronServer do
     end
   end
 
-  @doc """
-    Activate the timer for the given Cron using the Erlang :timer library. Only
-    activates the timer if there is no current timer reference.
-
-    See http://erlang.org/doc/man/timer.html for details
-  """
+  #Activate the timer for the given Cron using the Erlang :timer library.
+  #Only activates the timer if there is no current timer reference.
+  #See http://erlang.org/doc/man/timer.html for details
   defp set_timer(cron) do
     case cron.ref do
       nil -> 
