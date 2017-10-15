@@ -27,6 +27,14 @@ defmodule CronServerTest do
       refute Enum.find(updated_list, :nothing, &(&1.name == cron_name)) == :nothing
     end
 
+    test "Adding a new Cron returns a Cron with a timer reference" do
+      cron = %Cron{name: "timer_reference_test"}
+      assert is_nil(cron.ref)
+
+      updated_cron = CronServer.add_cron(cron)
+      assert is_reference(updated_cron.ref)
+    end
+
     test "Can't add a duplicate Cron by name", %{cron_name: cron_name} do
       CronServer.add_cron(%Cron{name: cron_name})
       assert {:error, _} = CronServer.add_cron(%Cron{name: cron_name})
