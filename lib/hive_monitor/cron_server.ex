@@ -85,6 +85,9 @@ defmodule HiveMonitor.CronServer do
   #----------------#
 
   def init(:ok) do
+    # Make sure that we run terminate() on exit.
+    Process.flag(:trap_exit, true)
+
     # We can't pass %Cron{}s from the config, so we have to use maps, and then
     # convert them to %Cron{}s here.
     cron_maps = Application.get_env(:hive_monitor, :crons) || []
@@ -135,6 +138,20 @@ defmodule HiveMonitor.CronServer do
     end
   end
 
+  def handle_info({:EXIT, _pid, reason}, state) do
+    Logger.info "Quitting CronServer because: #{inspect reason}."
+    Enum.each(state, fn(cron) ->
+      cancel_timer(cron)
+    end)
+    {:noreply, state}
+  end
+
+  def handle_info(message, state) do
+    Logger.info "CronServer received a message: #{inspect reason}."
+    {:noreply, state}
+  end
+
+
 
 
   # Cancel the Erlang timer for the given Cron (if there is a proper timer
@@ -143,7 +160,9 @@ defmodule HiveMonitor.CronServer do
   defp cancel_timer(cron) do
     case cron.ref do
       nil -> {:error, "no timer reference found"}
-      ref -> :timer.cancel(ref_to_tref(ref))
+      ref -> 
+        Logger.info "Cancelling timer for #{cron.name}"
+        :timer.cancel(ref_to_tref(ref))
     end
   end
 
