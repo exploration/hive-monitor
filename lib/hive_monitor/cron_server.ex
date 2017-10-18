@@ -147,7 +147,7 @@ defmodule HiveMonitor.CronServer do
   end
 
   def handle_info(message, state) do
-    Logger.info "CronServer received a message: #{inspect reason}."
+    Logger.info "CronServer received a message: #{inspect message}."
     {:noreply, state}
   end
 
