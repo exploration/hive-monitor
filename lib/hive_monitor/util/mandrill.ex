@@ -31,10 +31,8 @@ defmodule HiveMonitor.Util.Mandrill do
     HTTPotion.post(endpoint, [body: body, headers: headers])
   end
 
-
   defp get_recipients(email_list) do
     Enum.map(email_list, fn email -> %{email: email} end)
   end
-
 end
 
