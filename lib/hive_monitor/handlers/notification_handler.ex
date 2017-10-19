@@ -2,7 +2,8 @@ defmodule HiveMonitor.NotificationHandler do
   @behaviour HiveMonitor.Handler
 
   @moduledoc """
-    This module is designed to retrieve generic notifications that come from any system. It expects atom data in the format:
+    This module is designed to retrieve generic notifications that come from
+    any system. It expects atom data in the format:
 
         {
           message: String
@@ -18,6 +19,10 @@ defmodule HiveMonitor.NotificationHandler do
         }
   """
 
+  @doc """
+    Inspect the atom for information about what types of notifications to send,
+    then route to the appropriate system (SMS, Email, Chat).
+  """
   def handle_atom(atom) when is_map(atom) do
     {:ok, data} = Poison.decode(atom["data"])
     run_if_not_empty(data, "chat_handles", :send_chat_notifications)
@@ -26,26 +31,36 @@ defmodule HiveMonitor.NotificationHandler do
     true
   end
 
+  @doc false
+  def send_chat_notifications(data) do
+    message = data["message"]
+    HiveMonitor.Util.HipChat.send_notification(
+      message,
+      from: data["from"], 
+      mentions: data["chat_handles"],
+      room: data["room"]
+    )
+  end
+
+  @doc false
+  def send_email_notifications(data) do
+    message = data["message"]
+    email_list = data["emails"]
+    HiveMonitor.Util.Mandrill.send_email(
+      message, email_list, from: data["from"], subject: data["subject"]
+    )
+  end
+
+  @doc false
+  def send_sms_notifications(_data) do
+  end
+
+
   defp run_if_not_empty(data, key, function) do
     with {:ok, values} <- Map.fetch(data, key),
         true = Enum.count(values) > 0,
         do: apply(__MODULE__, function, [data])
   end
 
-  defp send_chat_notifications(data) do
-    IO.puts "Sending a notification message: #{inspect data}"
-
-    message = data["message"]
-    HiveMonitor.Util.HipChat.send_notification(
-      message, from: data["from"], mentions: data["chat_handles"], room: data["room"]
-    )
-  end
-
-  defp send_email_notifications(_data) do
-  end
-
-  defp send_sms_notifications(_data) do
-  end
 end
-
 
