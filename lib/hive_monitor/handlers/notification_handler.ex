@@ -6,22 +6,31 @@ defmodule HiveMonitor.NotificationHandler do
 
         {
           message: String
+          from: String (optional name of the sender)
+
           chat_handles: [String] (optional list of chat handles of recipients)
-          emails: [String] (optional list of email addresses of recipients)
-          sms_numbers: [String] (optional list of sms phone numbers of recipients)
           room: String (optional chatroom to post into)
+
+          sms_numbers: [String] (optional list of sms phone numbers of recipients)
+
+          emails: [String] (optional list of email addresses of recipients)
           subject: String (optional email subject line)
         }
   """
 
   def handle_atom(atom) when is_map(atom) do
     {:ok, data} = Poison.decode(atom["data"])
-    send_chat_notifications(data)    
-    send_email_notifications(data)
-    send_sms_notifications(data)
+    run_if_not_empty(data, "chat_handles", :send_chat_notifications)
+    run_if_not_empty(data, "sms_numbers", :send_sms_notifications)
+    run_if_not_empty(data, "emails", :send_email_notifications)
     true
   end
 
+  defp run_if_not_empty(data, key, function) do
+    with {:ok, values} <- Map.fetch(data, key),
+        true = Enum.count(values) > 0,
+        do: apply(__MODULE__, function, [data])
+  end
 
   defp send_chat_notifications(data) do
     IO.puts "Sending a notification message: #{inspect data}"
