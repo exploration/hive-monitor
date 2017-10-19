@@ -66,8 +66,8 @@ defmodule HiveMonitor.Router do
 
 
   def handle_call({:add_handler, triplet, handler}, _from, known_triplets) do
-    new_state = Map.update(known_triplets, triplet, [handler], fn(handler_list) ->
-      case Enum.find(handler_list, fn(v) -> v == handler end) do
+    new_state = Map.update(known_triplets, triplet, [handler], fn handler_list ->
+      case Enum.find(handler_list, fn v -> v == handler end) do
         nil -> [handler | handler_list]
         _ -> handler_list
       end
@@ -81,7 +81,7 @@ defmodule HiveMonitor.Router do
   end
 
   def handle_call({:remove_handler, triplet, handler}, _from, known_triplets) do
-    new_state = Map.update(known_triplets, triplet, [], fn(handler_list) ->
+    new_state = Map.update(known_triplets, triplet, [], fn handler_list ->
       List.delete handler_list, handler
     end)
 
@@ -98,20 +98,20 @@ defmodule HiveMonitor.Router do
   def handle_call({:route, atom}, _from, known_triplets) do
     triplet = {atom["application"], atom["context"], atom["process"]}
 
-    pid_list = 
+    task_list = 
       case Map.fetch(known_triplets, triplet) do
         {:ok, module_list} ->
-          Enum.map(module_list, fn(module) ->
+          Enum.map(module_list, fn module ->
             Logger.info("ATOM received (#{atom["application"]},#{atom["context"]},#{atom["process"]}), routing to #{to_string module}")
-            {:ok, pid} = Task.start_link(module, :handle_atom, [atom])
-            pid
+            Task.async(module, :handle_atom, [atom])
           end)
         :error -> 
-          {:ok, pid} = Task.start_link(GenericHandler, :handle_atom, [atom])
-          [ pid ]
+          [Task.async(GenericHandler, :handle_atom, [atom])]
       end
 
-    {:reply, pid_list, known_triplets}
+    Enum.each(task_list, fn pid -> Task.await(pid) end)
+
+    {:reply, task_list, known_triplets}
   end
   
 end
