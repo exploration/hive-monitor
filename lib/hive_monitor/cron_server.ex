@@ -78,6 +78,13 @@ defmodule HiveMonitor.CronServer do
     GenServer.call(__MODULE__, :list_crons)
   end
 
+  @doc false
+  def execute_cron(cron) do
+    Logger.info("CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
+        "#{cron.cmd} #{cron.args}")
+    System.cmd(cron.cmd, cron.args)
+  end
+
 
 
   #----------------#
@@ -198,9 +205,9 @@ defmodule HiveMonitor.CronServer do
   defp set_timer(cron) do
     case cron.ref do
       nil -> 
-        Logger.info "CronServer refresh #{cron.name} every #{cron.rate / 1000}s: #{cron.cmd} #{cron.args}"
-        {:ok, {:interval, ref}} = :timer.apply_interval(
-            cron.rate, System, :cmd, [cron.cmd, cron.args])
+        Logger.info "CronServer activating #{cron.name} every #{cron.rate / 1000}s"
+        {:ok, {:interval, ref}} = 
+            :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
         %{cron | ref: ref}
       _ -> cron
     end
