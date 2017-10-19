@@ -3,18 +3,24 @@ defmodule HiveMonitor.Util.HipChat do
   @default_room "143945" # "ROBOTS" room
   @token "AwS0F1sbBYlPPSJOWwITASwr7yslZBi9sVxJI10S"
 
-  def send_notification(message) do
-    send_notification(message, [], @default_room)
-  end
-  def send_notification(message, mentions) do
-    send_notification(message, mentions, @default_room)
-  end
-  def send_notification(message, mentions, room) do
+  @doc """
+    Send a notification through HipChat.
+
+    You can include a keyword list of options. Available options include:
+    
+    - `:from` (String) - The name of the sender
+    - `:mentions` ([String]) - The HipChat mention names of people who should receive a notification
+    - `:room` (Integer) - The ID of the room to which to post the message
+  """
+  def send_notification(message, options \\ []) do
+    mentions = format_mentions(Keyword.get(options, :mentions, []))
+    room = Keyword.get(options, :room) || @default_room
+
     {:ok, body} = Poison.encode %{
-      from: "HIVE Monitor",
+      from: Keyword.get(options, :from) || "HIVE Monitor",
       format: "text",
       notify: true,
-      message: "#{format_mentions(mentions)}#{message}"
+      message: "#{mentions}#{message}"
     }
     headers = [
       "Content-Type": "application/json",

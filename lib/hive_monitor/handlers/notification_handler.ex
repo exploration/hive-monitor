@@ -24,14 +24,12 @@ defmodule HiveMonitor.NotificationHandler do
 
 
   defp send_chat_notifications(data) do
+    IO.puts "Sending a notification message: #{inspect data}"
+
     message = data["message"]
-    with chat_handles = data["chat_handles"] do
-      IO.puts "Sending a notification message to #{inspect chat_handles}"
-      case Map.fetch(data, "room") do
-        :error -> HiveMonitor.Util.HipChat.send_notification(message, chat_handles)
-        room -> HiveMonitor.Util.HipChat.send_notification(message, chat_handles, room)
-      end
-    end
+    HiveMonitor.Util.HipChat.send_notification(
+      message, from: data["from"], mentions: data["chat_handles"], room: data["room"]
+    )
   end
 
   defp send_email_notifications(_data) do
