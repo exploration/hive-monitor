@@ -16,11 +16,13 @@ defmodule HiveMonitor.CronServer do
 
   defmodule Cron do
     @enforce_keys [:name]
-    defstruct name: nil,
-        cmd: "/bin/echo",
-        args: ["hello world"],
-        rate: :timer.seconds(10),
-        ref: nil
+    defstruct [
+      :name, :ref,
+      module: System,
+      fun: :cmd,
+      args: ["/bin/echo", "hello world"],
+      rate: :timer.seconds(10)
+    ]
   end
 
 
