@@ -57,9 +57,11 @@ defmodule HiveMonitor.NotificationHandler do
 
 
   defp run_if_not_empty(data, key, function) do
-    with {:ok, values} <- Map.fetch(data, key),
-        true = Enum.count(values) > 0,
-        do: apply(__MODULE__, function, [data])
+    {:ok, values} = Map.fetch(data, key)
+    if is_list(values) do
+      count = Enum.count(values) > 0
+      if(count > 0, do: apply(__MODULE__, function, [data]))
+    end
   end
 
 end
