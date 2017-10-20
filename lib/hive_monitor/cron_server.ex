@@ -16,11 +16,13 @@ defmodule HiveMonitor.CronServer do
 
   defmodule Cron do
     @enforce_keys [:name]
-    defstruct name: nil,
-        cmd: "/bin/echo",
-        args: ["hello world"],
-        rate: :timer.seconds(10),
-        ref: nil
+    defstruct [
+      :name, :ref,
+      module: System,
+      fun: :cmd,
+      args: ["/bin/echo", "hello world"],
+      rate: :timer.seconds(10)
+    ]
   end
 
 
@@ -81,8 +83,8 @@ defmodule HiveMonitor.CronServer do
   @doc false
   def execute_cron(cron) do
     Logger.info("CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
-        "#{cron.cmd} #{cron.args}")
-    System.cmd(cron.cmd, cron.args)
+        "#{inspect cron.module} #{inspect cron.fun} #{inspect cron.args}")
+    apply(cron.module, cron.fun, cron.args)
   end
 
 
