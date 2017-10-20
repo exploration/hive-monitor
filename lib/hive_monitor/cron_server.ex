@@ -21,7 +21,7 @@ defmodule HiveMonitor.CronServer do
       module: System,
       fun: :cmd,
       args: ["/bin/echo", "hello world"],
-      rate: :timer.seconds(10)
+      rate: :timer.minutes(60)
     ]
   end
 
