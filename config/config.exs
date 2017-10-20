@@ -15,7 +15,13 @@ config :logger, :console,
 # For a CRON to work, you need:
 #   :name, :cmd, :args [list], :rate (in ms)
 config :hive_monitor, crons: [
-  %{name: "echo_hello", cmd: "/bin/echo", args: ["hello"], rate: :timer.minutes(30)}
+  %{
+    name: "echo_hello",
+    module: System,
+    fun: :cmd,
+    args: ["/bin/echo",["hello"]],
+    rate: :timer.minutes(60)
+  }
 ]
 
 # The default configuration of the HIVE monitor is to run as a "server" to
