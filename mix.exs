@@ -40,6 +40,7 @@ defmodule HiveMonitor.Mixfile do
       {:poison, "~> 3.1"},
       {:phoenix, "~> 1.3"},
       {:httpotion, "~> 3.0.2"}
+      {:explo, git: "https://bitbucket.org/explo/explo-elixir-utilities.git"}
     ]
   end
 end
