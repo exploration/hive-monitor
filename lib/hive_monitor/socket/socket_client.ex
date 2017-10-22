@@ -6,7 +6,10 @@ defmodule HiveMonitor.SocketClient do
   @moduledoc false
 
   def start_link() do
-    token = (System.get_env("HIVE_SOCKET_TOKEN") || "nope") |> URI.encode
+    token = System.get_env("HIVE_SOCKET_TOKEN") ||
+        Application.get_env(:hive_monitor, :hive_socket_token) ||
+        "no key"
+    token = URI.encode(token)
     GenSocketClient.start_link(
           __MODULE__,
           Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
