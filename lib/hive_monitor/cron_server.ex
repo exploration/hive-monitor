@@ -1,18 +1,19 @@
 defmodule HiveMonitor.CronServer do
-  require Logger
-  use GenServer
 
   @moduledoc """
-    The CronServer is an attempt to consolidate all HIVE-related chores into
-    this one HiveMonitor zone. Typically in a HIVE system, you'll have certain
-    chores like shell scripts, remote triggers, etc. that need to be run on a
-    periodic timer (because not everything can be fully realtime eg. in
-    FileMaker systems). 
-    
-    The idea is that you make shell scripts or other
-    system scripts to run the periodic maintenance tasks, and then you can run
-    them periodically using this CronServer.  
+  The CronServer is an attempt to consolidate all HIVE-related chores into
+  this one HiveMonitor zone. Typically in a HIVE system, you'll have certain
+  chores like shell scripts, remote triggers, etc. that need to be run on a
+  periodic timer (because not everything can be fully realtime eg. in
+  FileMaker systems). 
+  
+  The idea is that you make shell scripts or other
+  system scripts to run the periodic maintenance tasks, and then you can run
+  them periodically using this CronServer.  
   """
+
+  use GenServer
+  require Logger
 
   defmodule Cron do
     @enforce_keys [:name]
@@ -31,53 +32,71 @@ defmodule HiveMonitor.CronServer do
   #----------------#
   
   @doc """
-    Starts the CronServer running. You don't typically need to do this by hand.
-    You can't pass methods to this server, instead use the :hive_monitor
-    :crons config variable to send them in.
+  Starts the CronServer running. You don't typically need to do this by hand.
+  You can't pass methods to this server, instead use the :hive_monitor
+  :crons config variable to send them in.
   """
   def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @doc """
-    Add a new Cron. Send it a %Cron{} struct with a unique name, and it'll be
-    happy.
+  Add a new Cron. Send it a %Cron{} struct with a unique name, and it'll be
+  happy.
 
-    Returns the Cron, with an updated timer reference, on success. Returns {:error, "description"} otherwise.
+  Returns the Cron, with an updated timer reference, on success. Returns {:error, "description"} otherwise.
   """
   def add_cron(cron) do
     GenServer.call(__MODULE__, {:add_cron, cron})
   end
 
   @doc """
-    Delete a Cron (by name) from the list of running Crons (and cancel its
-    timer).
+  Delete a Cron (by name) from the list of running Crons (and cancel its
+  timer).
 
-    Returns the list of running Crons, on success or failure. If it was
-    successful, the named Cron will be missing from the returned state :)
+  Returns the list of running Crons, on success or failure. If it was
+  successful, the named Cron will be missing from the returned state :)
   """
   def delete_cron(name) do
     GenServer.call(__MODULE__, {:delete_cron, name})
   end
 
   @doc """
-    Update a Cron's timer (by name and rate in ms).
+  Update a Cron's timer (by name and rate in ms).
 
-    Returns the updated Cron struct on success, and {:error, "description"}
-    otherwise.
+  Returns the updated Cron struct on success, and {:error, "description"}
+  otherwise.
 
-    Pro tip: Use :timer.seconds() / :timer.minutes() etc. as a convenience
-    method so you don't have to do manual millisecond math.
+  Pro tip: Use :timer.seconds() / :timer.minutes() etc. as a convenience
+  method so you don't have to do manual millisecond math.
   """
   def update_rate(name, rate) do
     GenServer.call(__MODULE__, {:update_rate, name, rate})
   end
 
   @doc """
-    Returns a list of all Cron (structs) currently running.
+  Returns a list of all Cron (structs) currently running.
   """
   def list_crons() do
     GenServer.call(__MODULE__, :list_crons)
+  end
+
+  @doc """
+  Returns a list of all Crons currently running as a map. This is handy for
+  copy/pasting into the `:hive_monitor, :crons` config variable for when you've
+  made changes to the server on-the-fly and want to store them.
+  """
+  def list_crons_map() do
+    crons = GenServer.call(__MODULE__, :list_crons)
+    Enum.map(crons, fn(cron) ->
+      %{
+        name: cron.name,
+        module: cron.module,
+        fun: cron.fun,
+        args: cron.args,
+        rate: cron.rate
+      }
+    end)
   end
 
   @doc false

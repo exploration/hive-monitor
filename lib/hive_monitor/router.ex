@@ -12,29 +12,34 @@ defmodule HiveMonitor.Router do
   end
 
   @doc """
-    Add a new handler to the HIVEMonitor system on-the-fly
+  Add a new handler to the HIVEMonitor system on-the-fly
 
-    Example:
+  Example:
 
-        HiveMonitor.Router.add_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
+      HiveMonitor.Router.add_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
   """
   def add_handler(triplet, handler) do
     GenServer.call(__MODULE__, {:add_handler, triplet, handler})
   end
 
   @doc """
-    Returns all known triplets, along with the list of any handlers associated with each triplet, as a map.
+  Returns all known triplets, along with the list of any handlers associated with each triplet, as a map.
+
+  The output of this function can be copy/pasted into the config variable
+  `:hive_monitor, :known_triplets`, which is handy for when you've made
+  configuration changes on-the-fly but want to store them in the
+  configuration file for when you eventually restart.
   """
   def known_triplets() do
     GenServer.call(__MODULE__, {:known_triplets})
   end
 
   @doc """
-    Stop handling the given triplet with the given handler.
+  Stop handling the given triplet with the given handler.
 
-    Example:
+  Example:
 
-        HiveMonitor.Router.remove_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
+      HiveMonitor.Router.remove_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
   """
   def remove_handler(triplet, handler) do
     GenServer.call(__MODULE__, {:remove_handler, triplet, handler})
@@ -42,11 +47,11 @@ defmodule HiveMonitor.Router do
 
 
   @doc """
-    Checks atom triplet against a known map of handlers (`@known_triplets`).
-    Passes the atom to the `handle_atom` method of the relevant handler if the
-    triplet matches.
+  Checks atom triplet against a known map of handlers (`@known_triplets`).
+  Passes the atom to the `handle_atom` method of the relevant handler if the
+  triplet matches.
 
-    This path is usually triggered automatically from the SocketClient.
+  This path is usually triggered automatically from the SocketClient.
   """
   def route(atom) when is_map(atom) do
     GenServer.call(__MODULE__, {:route, atom})
@@ -57,14 +62,16 @@ defmodule HiveMonitor.Router do
   # Server Methods #
   #----------------#
 
-  # The state that this server contains is "known triplets" from HIVE
+  @doc """
+  The state that this server contains is "known triplets" from HIVE
+  """
   def init(:ok) do
     known_triplets = Application.get_env(:hive_monitor, :known_triplets) || %{}
 
     {:ok, known_triplets}
   end
 
-
+  @doc false
   def handle_call({:add_handler, triplet, handler}, _from, known_triplets) do
     new_state = Map.update(known_triplets, triplet, [handler], fn handler_list ->
       case Enum.find(handler_list, fn v -> v == handler end) do
@@ -75,11 +82,13 @@ defmodule HiveMonitor.Router do
 
     {:reply, new_state, new_state}
   end
-
+  
+  @doc false
   def handle_call({:known_triplets}, _from, known_triplets) do
     {:reply, known_triplets, known_triplets}
   end
 
+  @doc false
   def handle_call({:remove_handler, triplet, handler}, _from, known_triplets) do
     new_state = Map.update(known_triplets, triplet, [], fn handler_list ->
       List.delete handler_list, handler
@@ -94,7 +103,7 @@ defmodule HiveMonitor.Router do
     {:reply, new_state, new_state}
   end
 
-
+  @doc false
   def handle_call({:route, atom}, _from, known_triplets) do
     triplet = {atom["application"], atom["context"], atom["process"]}
 
