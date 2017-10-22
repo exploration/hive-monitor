@@ -18,11 +18,7 @@ defmodule HiveMonitor.Mixfile do
   def application do
     [
       mod: {HiveMonitor, []},
-      applications: [
-       :phoenix_gen_socket_client,
-       :websocket_client,
-       :httpotion
-      ]
+      extra_applications: [:logger]
     ]
   end
 
