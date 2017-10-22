@@ -2,21 +2,21 @@ defmodule HiveMonitor.NotificationHandler do
   @behaviour HiveMonitor.Handler
 
   @moduledoc """
-    This module is designed to retrieve generic notifications that come from
-    any system. It expects atom data in the format:
+  This module is designed to retrieve generic notifications that come from
+  any system. It expects atom data in the format:
 
-        {
-          message: String
-          from: String (optional name of the sender)
+      {
+        message: String
+        from: String (optional name of the sender)
 
-          chat_handles: [String] (optional list of chat handles of recipients)
-          room: String (optional chatroom to post into)
+        chat_handles: [String] (optional list of chat handles of recipients)
+        room: String (optional chatroom to post into)
 
-          sms_numbers: [String] (optional list of sms phone numbers of recipients)
+        sms_numbers: [String] (optional list of sms phone numbers of recipients)
 
-          emails: [String] (optional list of email addresses of recipients)
-          subject: String (optional email subject line)
-        }
+        emails: [String] (optional list of email addresses of recipients)
+        subject: String (optional email subject line)
+      }
   """
 
   @doc """
@@ -34,7 +34,7 @@ defmodule HiveMonitor.NotificationHandler do
   @doc false
   def send_chat_notifications(data) do
     message = data["message"]
-    HiveMonitor.Util.HipChat.send_notification(
+    Explo.Util.HipChat.send_notification(
       message,
       from: data["from"], 
       mentions: data["chat_handles"],
@@ -46,7 +46,7 @@ defmodule HiveMonitor.NotificationHandler do
   def send_email_notifications(data) do
     message = data["message"]
     email_list = data["emails"]
-    HiveMonitor.Util.Mandrill.send_email(
+    Explo.Util.Mandrill.send_email(
       message, email_list, from: data["from"], subject: data["subject"]
     )
   end
