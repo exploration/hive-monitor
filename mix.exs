@@ -33,9 +33,9 @@ defmodule HiveMonitor.Mixfile do
     [
       {:phoenix_gen_socket_client, "~> 1.2.0"},
       {:websocket_client, github: "sanmiguel/websocket_client"},
-      {:poison, "~> 3.1"},
       {:phoenix, "~> 1.3"},
-      {:httpotion, "~> 3.0.2"}
+      {:poison, "~> 3.1"},
+      {:httpoison, "~> 0.13"},
       {:explo, git: "https://bitbucket.org/explo/explo-elixir-utilities.git"}
     ]
   end

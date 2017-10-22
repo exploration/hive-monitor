@@ -28,7 +28,7 @@ defmodule HiveMonitor.Util.HipChat do
     ]
     endpoint = "#{@api_url}/room/#{room}/notification"
 
-    HTTPotion.post(endpoint, [body: body, headers: headers])
+    HTTPoison.post(endpoint, body, headers)
   end
 
   defp format_mentions(mentions) when is_list(mentions) do

@@ -28,7 +28,7 @@ defmodule HiveMonitor.Util.Mandrill do
     headers = [ "Content-Type": "application/json" ]
     endpoint = "#{@api_url}/messages/send.json"
 
-    HTTPotion.post(endpoint, [body: body, headers: headers])
+    HTTPoison.post(endpoint, body, headers)
   end
 
   defp get_recipients(email_list) do
