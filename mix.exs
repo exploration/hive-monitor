@@ -3,7 +3,7 @@ defmodule HiveMonitor.Mixfile do
 
   def project do
     [app: :hive_monitor,
-     version: "0.0.1",
+     version: "0.1.1",
      elixir: "~> 1.0",
      elixirc_paths: elixirc_paths(Mix.env),
      compilers: Mix.compilers,
@@ -36,7 +36,7 @@ defmodule HiveMonitor.Mixfile do
       {:phoenix, "~> 1.3"},
       {:poison, "~> 3.1"},
       {:httpoison, "~> 0.13"},
-      {:explo, git: "https://bitbucket.org/explo/explo-elixir-utilities.git"}
+      {:explo, git: "bitbucket.org:explo/explo-elixir-utilities.git"}
     ]
   end
 end
