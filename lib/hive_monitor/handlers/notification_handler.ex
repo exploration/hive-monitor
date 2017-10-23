@@ -1,5 +1,4 @@
 defmodule HiveMonitor.NotificationHandler do
-  @behaviour HiveMonitor.Handler
 
   @moduledoc """
   This module is designed to retrieve generic notifications that come from
@@ -19,49 +18,109 @@ defmodule HiveMonitor.NotificationHandler do
       }
   """
 
+  @behaviour HiveMonitor.Handler
+  require Logger
+  alias Explo.HiveService
+  alias Explo.Util.{HipChat, Mandrill}
+
   @doc """
     Inspect the atom for information about what types of notifications to send,
     then route to the appropriate system (SMS, Email, Chat).
   """
   def handle_atom(atom) when is_map(atom) do
-    {:ok, data} = Poison.decode(atom["data"])
-    run_if_not_empty(data, "chat_handles", :send_chat_notifications)
-    run_if_not_empty(data, "sms_numbers", :send_sms_notifications)
-    run_if_not_empty(data, "emails", :send_email_notifications)
-    true
+    case Poison.decode(atom["data"]) do
+      {:ok, data} ->
+        status_list = run_if_not_empty( 
+          data, 
+          "chat_handles": :send_chat_notifications,
+          "sms_numbers": :send_sms_notifications,
+          "emails": :send_email_notifications
+        )
+        put_receipt(atom, status_list)
+      error -> Logger.error(inspect(error))
+    end
   end
 
   @doc false
   def send_chat_notifications(data) do
     message = data["message"]
-    Explo.Util.HipChat.send_notification(
+    {:ok, response} = HipChat.send_notification(
       message,
       from: data["from"], 
       mentions: data["chat_handles"],
       room: data["room"]
     )
+    status = parse_status_code(response.status_code)
+    if(status == {:ok, :sent}, do: Logger.info("chat notification sent"))
+    status
   end
 
   @doc false
   def send_email_notifications(data) do
     message = data["message"]
     email_list = data["emails"]
-    Explo.Util.Mandrill.send_email(
+    {:ok, response} = Mandrill.send_email(
       message, email_list, from: data["from"], subject: data["subject"]
     )
+    status = parse_status_code(response.status_code)
+    if(status == {:ok, :sent}, do: Logger.info("email notification sent"))
+    status
   end
 
   @doc false
   def send_sms_notifications(_data) do
+    false
   end
 
 
-  defp run_if_not_empty(data, key, function) do
-    {:ok, values} = Map.fetch(data, key)
-    if is_list(values) do
-      count = Enum.count(values) > 0
-      if(count > 0, do: apply(__MODULE__, function, [data]))
+  defp strip_empty_strings(list) when is_list(list) do
+    Enum.filter(list, fn x -> x != "" end)
+  end
+
+  defp parse_status_code(status_code) do
+    case status_code >= 200 && status_code < 300 do
+      true -> {:ok, :sent}
+      false -> {:error, :send_notification}
     end
+  end
+
+  defp put_receipt(atom, status_list) do
+    with notifications_went_through? <-
+          Enum.any?(status_list, fn {status, _} -> status == :ok end),
+        no_valid_statuses? <- Enum.all?(status_list, 
+          fn stat -> stat == {:error, :empty_recipients} end
+        ),
+        atom_id <- atom["id"],
+        put_receipt? <- is_integer(atom_id) &&
+          (no_valid_statuses? || notifications_went_through?) do
+
+      if put_receipt? do
+        HiveService.put_receipt(atom["id"], HiveMonitor.application_name())    
+      end
+    end
+  end
+
+  # Given some data, and a list of key/function tuples, attempt to run each of
+  # the functions if the key is present in the data.
+  #
+  # Returns a list of status tuples, one for each key/function tuple sent.
+  defp run_if_not_empty(data, key_function_tuples) do
+    Enum.map(key_function_tuples, fn {key, function} ->
+      key = Atom.to_string(key)
+      case Map.fetch(data, key) do
+        {:ok, recipients} ->
+          case is_list(recipients) do
+            true ->
+              recipients = strip_empty_strings(recipients)
+              case Enum.count(recipients) > 0 do
+                true -> apply(__MODULE__, function, [data])
+                false -> {:error, :empty_recipients}
+              end
+            false -> {:error, :invalid_recipients}
+          end
+        :error -> {:error, :empty_recipients}
+      end
+    end)
   end
 
 end
