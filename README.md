@@ -28,6 +28,7 @@ These can also be set as environment variables in ALL_CAPS (eg
 
 There are a few other possible/semi-optional configuration variables in this
 system:
+
     config :hive_monitor,
       application_name: "can_be_customized",
       crons: "output of HiveMonitor.CronServer.list_crons_map()",
