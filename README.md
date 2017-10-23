@@ -1,13 +1,19 @@
 # HIVE Monitor
 
-This app subscribes to real-time Atom updates from [HIVE](https://bitbucket.org/explo/hive-2), and can run scripts on the local machine in response to them. You would use it to avoid having to long-poll HIVE's REST API and instead get results in closer to real-time.
+This app subscribes to real-time Atom updates from
+[HIVE](https://bitbucket.org/explo/hive-2), and can run scripts on the local
+machine in response to them. You would use it to avoid having to long-poll
+HIVE's REST API and instead get results in closer to real-time.
 
-The application can also run local scripts or Elixir functions periodically, in a similar way to cron, which makes it easier to keep all synchronization in one area. See `CronServer` for details of how to set that up.
+The application can also run local scripts or Elixir functions periodically, in
+a similar way to cron, which makes it easier to keep all synchronization in one
+area. See `CronServer` for details of how to set that up.
 
 
 # Setup
 
-You'll probably want to update `config/config.exs` with some API token variables:
+You'll probably want to update `config/config.exs` with some API token
+variables:
 
     config :hive_monitor,
       hive_socket_token: "your token"
@@ -17,4 +23,15 @@ You'll probably want to update `config/config.exs` with some API token variables
       hipchat_api_token: "your token",
       mandrill_key: "your key"
 
-These can also be set as environment variables in ALL_CAPS (eg `HIVE_SOCKET_TOKEN` etc.).
+These can also be set as environment variables in ALL_CAPS (eg
+`HIVE_SOCKET_TOKEN` etc.).
+
+There are a few other possible/semi-optional configuration variables in this
+system:
+    config :hive_monitor,
+      application_name: "can_be_customized",
+      crons: "output of HiveMonitor.CronServer.list_crons_map()",
+      known_triplets: "output of HiveMonitor.Router.known_triplets()"
+
+Check the related modules for more details about how to preconfigure/save
+triplet/module maps and "Cron" jobs.
