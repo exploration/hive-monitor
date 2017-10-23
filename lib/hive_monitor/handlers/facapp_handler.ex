@@ -12,6 +12,10 @@ defmodule HiveMonitor.FacAppHandler do
   @api_url 'http://facapp.lab.explo.org/hive/incoming_atoms'
 
 
+  @doc false
+  def application_name, do: "facapp"
+
+  @doc false
   def handle_atom(atom) when is_map(atom) do
     atom_encoded = Handler.atom_to_uri_query(atom)
     body = "atom=#{atom_encoded}&api_token=#{@api_token}"

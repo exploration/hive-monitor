@@ -12,6 +12,9 @@ defmodule HiveMonitor.PortalHandler do
   @portal_url 'https://portal.explo.org/hive/incoming_atoms'
 
   @doc false
+  def application_name, do: "portal"
+
+  @doc false
   def handle_atom(atom) do
     atom_encoded = Handler.atom_to_uri_query(atom)
 

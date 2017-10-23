@@ -12,8 +12,11 @@ defmodule HiveMonitor.FMHandler do
   @server_url "fmp://minerva.explo.org/hive_data"
   
 
+  @doc false
+  def application_name, do: "portico"
+
   @doc """
-  FileMaker atoms are passed to a FM script, which brings them into the
+  FileMaker/Portico atoms are passed to a FM script, which brings them into the
   hive_data DB and passes them along to the appropriate handler within Portico.
   """
   def handle_atom(atom) do

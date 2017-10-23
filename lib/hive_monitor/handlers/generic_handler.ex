@@ -8,6 +8,10 @@ defmodule HiveMonitor.GenericHandler do
 
   @behaviour HiveMonitor.Handler
 
+  @doc false
+  def application_name, do: :none
+
+  @doc false
   def handle_atom(atom) do
     recipients = ["Donald"]
     message = "Generic Handler got the atom: (#{atom.application}" <>
