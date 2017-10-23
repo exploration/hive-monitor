@@ -5,6 +5,8 @@ defmodule HiveMonitor.Handler do
     function: `handle_atom`.
   """
 
+  require Logger
+
   alias Explo.HiveAtom
 
 
@@ -14,7 +16,7 @@ defmodule HiveMonitor.Handler do
   is, each HiveAtom originating from the Portal system would have `application:
   "portal"`. 
   """
-  @callback application_name :: String.t | :none
+  @callback application_name() :: String.t | :none
 
   @doc """
   Take a HiveAtom from HIVE in realtime, and send it somewhere else.
@@ -38,14 +40,26 @@ defmodule HiveMonitor.Handler do
   @doc """
   For whatever reason, our realtime system might have missed HIVE atoms as they
   came across the wire. The job of this function is to grab the current list of
-  triplets we should be handling, query HIVE for any unseen atoms, and handle
-  them.
+  triplets we should be handling, query HIVE for any atoms unseen by the
+  handler application name, and handle them.
   """
   def handle_missed_atoms do
     known_triplets = HiveMonitor.Router.known_triplets()
-    Enum.each(known_triplets, fn triplet ->
-      IO.inspect triplet
-      #Explo.HiveService.get_unseen_atoms(
+    Enum.each(known_triplets, fn known_triplet ->
+      {{application, context, process}, handler_list} = known_triplet
+
+      Enum.each(handler_list, fn handler ->
+        receiving_app = apply(handler, :application_name, [])
+        atom_list = 
+          Explo.HiveService.get_unseen_atoms(
+            receiving_app, application, context, process
+          )
+        Logger.info("handling #{Enum.count(atom_list)} missed atoms from " <>
+          "#{application}:#{context}:#{process} for #{receiving_app}"
+        )
+
+        Enum.each(atom_list, fn atom -> HiveMonitor.Router.route(atom) end)
+      end)
     end)
   end
 end
