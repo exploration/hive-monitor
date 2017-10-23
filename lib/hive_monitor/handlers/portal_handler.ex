@@ -8,6 +8,7 @@ defmodule HiveMonitor.PortalHandler do
   def handle_atom(atom) when is_map(atom) do
     atom_json = Handler.encode_params(atom)
     body = "atom=#{atom_json}&portal_token=#{@portal_token}"
+    atom_encoded = Handler.atom_to_uri_query(atom)
     headers = [
         "User-Agent": "HIVE Monitor",
         "Content-Type": "application/x-www-form-urlencoded"

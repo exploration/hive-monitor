@@ -16,8 +16,9 @@ defmodule HiveMonitor.Handler do
   @callback handle_atom(%HiveAtom{}) :: boolean
 
 
-  def encode_params(map) when is_map(map) do
-    map
+  def atom_to_uri_query(atom = %HiveAtom{}) do
+    atom
+    |> Map.from_struct
     |> Poison.encode!
     |> URI.encode_www_form
   end

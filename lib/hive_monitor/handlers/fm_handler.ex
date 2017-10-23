@@ -12,7 +12,7 @@ defmodule HiveMonitor.FMHandler do
   def handle_atom(atom) when is_map(atom) do
     url = "#{@server_url}" <>
       "?script=#{URI.encode(@script_name)}" <>
-      "&param=#{Handler.encode_params(atom)}"
+      "&param=#{Handler.atom_to_uri_query(atom)}"
     System.cmd "/usr/bin/open", [url]
 
     true

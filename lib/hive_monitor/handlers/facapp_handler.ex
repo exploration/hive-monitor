@@ -6,8 +6,8 @@ defmodule HiveMonitor.FacAppHandler do
   @api_url 'http://facapp.lab.explo.org/hive/incoming_atoms'
 
   def handle_atom(atom) when is_map(atom) do
-    atom_json = Handler.encode_params(atom)
-    body = "atom=#{atom_json}&api_token=#{@api_token}"
+    atom_encoded = Handler.atom_to_uri_query(atom)
+    body = "atom=#{atom_encoded}&api_token=#{@api_token}"
     headers = [
         "User-Agent": "HIVE Monitor",
         "Content-Type": "application/x-www-form-urlencoded"
