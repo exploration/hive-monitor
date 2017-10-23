@@ -1,15 +1,19 @@
 defmodule HiveMonitor.GenericHandler do
+
+  @moduledoc """
+  The generic case is that we send the atom to HipChat, and notify IT.
+  """
+
+  require Logger
+
   @behaviour HiveMonitor.Handler
 
-  @doc """
-  The generic case is that we send the atom to HipChat.
-  """
-  def handle_atom(atom) when is_map(atom) do
+  def handle_atom(atom) do
     recipients = ["Donald"]
-    message = "Generic Handler got the atom: (#{atom["application"]}" <>
-        ", #{atom["context"]}, #{atom["process"]})"
+    message = "Generic Handler got the atom: (#{atom.application}" <>
+        ", #{atom.context}, #{atom.process})"
 
-    IO.puts(message)
+    Logger.info(message)
     Explo.Util.HipChat.send_notification(message, recipients)
     true
   end

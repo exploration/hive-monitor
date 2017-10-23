@@ -1,12 +1,31 @@
 defmodule HiveMonitor.Router do
-  alias HiveMonitor.GenericHandler
-  require Logger
+
+  @moduledoc """
+  The HiveMonitor Router is a service designed to map incoming HIVE atoms to
+  handler modules. It keeps a state of the atom "triplets", which identify the
+  system from which the atom came, and which modules correspond to those
+  triplets.
+
+  The state can be configured on-the-fly through the `add_handler`,
+  `remove_handler`, and `known_triplets` calls, or it can be set in the
+  `:hive_monitor, :known_triplets` configuration variable.
+  """
+
   use GenServer
+
+  require Logger
+
+  alias Explo.HiveAtom
+  alias HiveMonitor.GenericHandler
+
 
   #----------------#
   # Client Methods #
   #----------------#
   
+  @doc """
+  Start this Router. Typically called by a Supervisor function.
+  """
   def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
@@ -104,14 +123,15 @@ defmodule HiveMonitor.Router do
   end
 
   @doc false
-  def handle_call({:route, atom}, _from, known_triplets) do
-    triplet = {atom["application"], atom["context"], atom["process"]}
+  def handle_call({:route, atom_map}, _from, known_triplets) do
+    atom = HiveAtom.from_map(atom_map) 
+    triplet = HiveAtom.triplet(atom)
 
     task_list = 
       case Map.fetch(known_triplets, triplet) do
         {:ok, module_list} ->
           Enum.map(module_list, fn module ->
-            Logger.info("ATOM received (#{atom["application"]},#{atom["context"]},#{atom["process"]}), routing to #{to_string module}")
+            Logger.info("ATOM received (#{atom.application},#{atom.context},#{atom.process}), routing to #{to_string module}")
             Task.async(module, :handle_atom, [atom])
           end)
         :error -> 

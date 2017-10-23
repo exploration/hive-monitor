@@ -2,7 +2,7 @@ defmodule HiveMonitor.NotificationHandler do
 
   @moduledoc """
   This module is designed to retrieve generic notifications that come from
-  any system. It expects atom data in the format:
+  any system. It expects atom.data in the format:
 
       {
         message: String
@@ -27,8 +27,8 @@ defmodule HiveMonitor.NotificationHandler do
     Inspect the atom for information about what types of notifications to send,
     then route to the appropriate system (SMS, Email, Chat).
   """
-  def handle_atom(atom) when is_map(atom) do
-    case Poison.decode(atom["data"]) do
+  def handle_atom(atom) do
+    case Poison.decode(atom.data) do
       {:ok, data} ->
         status_list = run_if_not_empty( 
           data, 
@@ -90,12 +90,11 @@ defmodule HiveMonitor.NotificationHandler do
         no_valid_statuses? <- Enum.all?(status_list, 
           fn stat -> stat == {:error, :empty_recipients} end
         ),
-        atom_id <- atom["id"],
-        put_receipt? <- is_integer(atom_id) &&
+        put_receipt? <- is_integer(atom.id) &&
           (no_valid_statuses? || notifications_went_through?) do
 
       if put_receipt? do
-        HiveService.put_receipt(atom["id"], HiveMonitor.application_name())    
+        HiveService.put_receipt(atom.id, HiveMonitor.application_name())    
       end
     end
   end
