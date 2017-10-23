@@ -13,7 +13,7 @@ defmodule HiveMonitor.FMHandler do
   
 
   @doc false
-  def application_name, do: "portico"
+  def application_name(), do: "portico"
 
   @doc """
   FileMaker/Portico atoms are passed to a FM script, which brings them into the

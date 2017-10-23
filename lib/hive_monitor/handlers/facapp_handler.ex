@@ -13,7 +13,7 @@ defmodule HiveMonitor.FacAppHandler do
 
 
   @doc false
-  def application_name, do: "facapp"
+  def application_name(), do: "facapp"
 
   @doc false
   def handle_atom(atom) when is_map(atom) do

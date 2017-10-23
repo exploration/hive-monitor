@@ -24,7 +24,7 @@ defmodule HiveMonitor.NotificationHandler do
   alias Explo.Util.{HipChat, Mandrill}
   
   @doc false
-  def application_name, do: HiveMonitor.application_name()
+  def application_name(), do: HiveMonitor.application_name()
 
   @doc """
     Inspect the atom for information about what types of notifications to send,

@@ -9,7 +9,7 @@ defmodule HiveMonitor.GenericHandler do
   @behaviour HiveMonitor.Handler
 
   @doc false
-  def application_name, do: :none
+  def application_name(), do: :none
 
   @doc false
   def handle_atom(atom) do
