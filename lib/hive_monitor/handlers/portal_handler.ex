@@ -12,7 +12,7 @@ defmodule HiveMonitor.PortalHandler do
   @portal_url 'https://portal.explo.org/hive/incoming_atoms'
 
   @doc false
-  def application_name(), do: "portal"
+  def application_name(), do: "portal_production"
 
   @doc false
   def handle_atom(atom) do
