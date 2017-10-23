@@ -5,10 +5,16 @@ defmodule HiveMonitor.Handler do
     function: `handle_atom`.
   """
 
+  alias Explo.HiveAtom
+
+
   @doc """
-  Take an atom from HIVE in realtime, and send it somewhere else.
+  Take a HiveAtom from HIVE in realtime, and send it somewhere else.
+
+  Returns a boolean: `true` for it worked, `false` otherwise.
   """
-  @callback handle_atom(map) :: boolean
+  @callback handle_atom(%HiveAtom{}) :: boolean
+
 
   def encode_params(map) when is_map(map) do
     map
