@@ -1,4 +1,4 @@
-defmodule HiveMonitor.FMHandler do
+defmodule HiveMonitor.PorticoHandler do
   
   @moduledoc """
   Forward an atom along to Portico's "incoming atom" endpoint.
