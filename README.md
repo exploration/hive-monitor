@@ -21,7 +21,8 @@ variables:
     config :explo,
       hive_api_token: "your token",
       hipchat_api_token: "your token",
-      mandrill_key: "your key"
+      mandrill_api_key: "your key"
+      twilio_api_token: "your token"
 
 These can also be set as environment variables in ALL_CAPS (eg
 `HIVE_SOCKET_TOKEN` etc.).
