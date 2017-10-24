@@ -21,7 +21,7 @@ defmodule HiveMonitor.NotificationHandler do
   @behaviour HiveMonitor.Handler
   require Logger
   alias Explo.HiveService
-  alias Explo.Util.{HipChat, Mandrill}
+  alias Explo.Util.{HipChat, Mandrill, Twilio}
   
   @doc false
   def application_name(), do: HiveMonitor.application_name()
@@ -54,7 +54,7 @@ defmodule HiveMonitor.NotificationHandler do
       room: data["room"]
     )
     status = parse_status_code(response.status_code)
-    if(status == {:ok, :sent}, do: Logger.info("chat notification sent"))
+    if(status == {:ok, :sent}, do: Logger.info("chat notification(s) sent"))
     status
   end
 
@@ -66,13 +66,25 @@ defmodule HiveMonitor.NotificationHandler do
       message, email_list, from: data["from"], subject: data["subject"]
     )
     status = parse_status_code(response.status_code)
-    if(status == {:ok, :sent}, do: Logger.info("email notification sent"))
+    if(status == {:ok, :sent}, do: Logger.info("email notification(s) sent"))
     status
   end
 
   @doc false
-  def send_sms_notifications(_data) do
-    false
+  def send_sms_notifications(data) do
+    message = data["message"] 
+    number_list = data["sms_numbers"]
+    status_list =
+      Enum.map(number_list, fn number ->
+        {:ok, response} = Twilio.send_sms(message, number)
+        parse_status_code(response.status_code)
+      end)
+    case Enum.any?(status_list, &({:ok, :sent} == &1)) do
+      true -> 
+        Logger.info("sms notification(s) sent")
+        {:ok, :sent}
+      false -> {:error, :send_sms}
+    end
   end
 
 
