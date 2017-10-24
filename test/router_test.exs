@@ -20,7 +20,6 @@ defmodule RouterTest do
       test_handler: test_handler,
       atom: atom
     }
-    
   end
 
   describe "Test adding + removing handlers: " do
@@ -60,24 +59,6 @@ defmodule RouterTest do
       known_triplets = Router.remove_handler(triplet, test_handler)
 
       assert {:ok, [handler]} == Map.fetch(known_triplets, triplet)
-    end
-  end
-
-
-  describe "Test routing: " do
-    test "Routing an atom returns a list of task PIDs", %{atom: atom} do
-      task_list = Router.route(atom)
-      assert is_list task_list
-      assert %Task{pid: pid} = List.first(task_list)
-      assert is_pid pid
-    end
-
-    test "Routing to an atom with x handlers returns a pid_list of length x", %{atom: atom, triplet: triplet, handler: handler, test_handler: test_handler} do
-      Router.add_handler(triplet, handler)
-      Router.add_handler(triplet, test_handler)
-
-      task_list = Router.route(atom)
-      assert Enum.count(task_list) == 2
     end
   end
 

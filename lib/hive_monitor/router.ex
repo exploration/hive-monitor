@@ -67,13 +67,13 @@ defmodule HiveMonitor.Router do
 
   @doc """
   Checks atom triplet against a known map of handlers (`@known_triplets`).
-  Passes the atom to the `handle_atom` method of the relevant handler if the
+  Passes the atom to the `handle_atom` method of the relevant handler(s) if the
   triplet matches.
 
   This path is usually triggered automatically from the SocketClient.
   """
   def route(atom) when is_map(atom) do
-    GenServer.call(__MODULE__, {:route, atom})
+    GenServer.cast(__MODULE__, {:route, atom})
   end
 
 
@@ -123,7 +123,7 @@ defmodule HiveMonitor.Router do
   end
 
   @doc false
-  def handle_call({:route, atom_map}, _from, known_triplets) do
+  def handle_cast({:route, atom_map}, known_triplets) do
     atom = HiveAtom.from_map(atom_map) 
     triplet = HiveAtom.triplet(atom)
 
@@ -131,7 +131,9 @@ defmodule HiveMonitor.Router do
       case Map.fetch(known_triplets, triplet) do
         {:ok, module_list} ->
           Enum.map(module_list, fn module ->
-            Logger.info("ATOM received (#{atom.application},#{atom.context},#{atom.process}), routing to #{to_string module}")
+            Logger.info("ATOM received (#{atom.application}" <>
+                ",#{atom.context},#{atom.process})" <>
+                ", routing to #{to_string module}")
             Task.async(module, :handle_atom, [atom])
           end)
         :error -> 
@@ -140,7 +142,7 @@ defmodule HiveMonitor.Router do
 
     Enum.each(task_list, fn pid -> Task.await(pid) end)
 
-    {:reply, task_list, known_triplets}
+    {:noreply, known_triplets}
   end
   
 end
