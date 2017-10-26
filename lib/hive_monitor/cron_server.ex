@@ -167,7 +167,7 @@ defmodule HiveMonitor.CronServer do
   end
 
   def handle_info({:EXIT, _pid, reason}, state) do
-    Logger.info "Quitting CronServer because: #{inspect reason}."
+    Logger.info(fn -> "Quitting CronServer because: #{inspect reason}." end)
     Enum.each(state, fn(cron) ->
       cancel_timer(cron)
     end)
@@ -175,7 +175,7 @@ defmodule HiveMonitor.CronServer do
   end
 
   def handle_info(message, state) do
-    Logger.info "CronServer received a message: #{inspect message}."
+    Logger.info(fn -> "CronServer received a message: #{inspect message}." end)
     {:noreply, state}
   end
 
@@ -189,7 +189,7 @@ defmodule HiveMonitor.CronServer do
     case cron.ref do
       nil -> {:error, "no timer reference found"}
       ref -> 
-        Logger.info "Cancelling timer for #{cron.name}"
+        Logger.info(fn -> "Cancelling timer for #{cron.name}" end)
         :timer.cancel(ref_to_tref(ref))
     end
   end
@@ -226,7 +226,8 @@ defmodule HiveMonitor.CronServer do
   defp set_timer(cron) do
     case cron.ref do
       nil -> 
-        Logger.info "CronServer activating #{cron.name} every #{cron.rate / 1000}s"
+        Logger.info(fn -> "CronServer activating #{cron.name}" <>
+            " every #{cron.rate / 1000}s" end )
         {:ok, {:interval, ref}} = 
             :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
         %{cron | ref: ref}

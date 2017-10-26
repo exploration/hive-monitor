@@ -34,29 +34,31 @@ defmodule HiveMonitor.SocketClient do
 
 
   def handle_connected(transport, state) do
-    Logger.info("connected")
+    Logger.info(fn -> "connected" end)
     GenSocketClient.join(transport, "atom:create")
     {:ok, state}
   end
 
   def handle_disconnected(reason, state) do
-    Logger.error("disconnected: #{inspect reason}, #{inspect state}")
+    Logger.error(fn -> "disconnected: #{inspect reason}, #{inspect state}" end)
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
   end
 
   def handle_joined(topic, _payload, _transport, state) do
-    Logger.info("joined the topic #{topic}")
+    Logger.info(fn -> "joined the topic #{topic}" end)
     {:ok, state}
   end
 
   def handle_join_error(topic, payload, _transport, state) do
-    Logger.error("join error on the topic #{topic}: #{inspect payload}")
+    Logger.error(fn -> "join error on the topic #{topic}: #{inspect payload}" end)
     {:ok, state}
   end
 
   def handle_channel_closed(topic, payload, _transport, state) do
-    Logger.error("disconnected from the topic #{topic}: #{inspect payload}")
+    Logger.error(fn -> 
+      "disconnected from the topic #{topic}: #{inspect payload}"
+    end)
     Process.send_after(self(), {:join, topic}, :timer.seconds(1))
     {:ok, state}
   end
@@ -66,24 +68,28 @@ defmodule HiveMonitor.SocketClient do
     {:ok, state}
   end
   def handle_message(topic, event, payload, _transport, state) do
-    Logger.warn("message on topic #{topic}: #{event} #{inspect payload}")
+    Logger.warn(fn -> 
+      "message on topic #{topic}: #{event} #{inspect payload}"
+    end)
     {:ok, state}
   end
 
   def handle_reply(topic, _ref, payload, _transport, state) do
-    Logger.warn("reply on topic #{topic}: #{inspect payload}")
+    Logger.warn(fn -> "reply on topic #{topic}: #{inspect payload}" end)
     {:ok, state}
   end
 
   def handle_info(:connect, _transport, state) do
-    Logger.info("connecting")
+    Logger.info(fn -> "connecting" end)
     {:connect, state}
   end
   def handle_info({:join, topic}, transport, state) do
-    Logger.info("joining the topic #{topic}")
+    Logger.info(fn -> "joining the topic #{topic}" end)
     case GenSocketClient.join(transport, topic) do
       {:error, reason} ->
-        Logger.error("error joining the topic #{topic}: #{inspect reason}")
+        Logger.error(fn -> 
+          "error joining the topic #{topic}: #{inspect reason}"
+        end)
         Process.send_after(self(), {:join, topic}, :timer.seconds(1))
       {:ok, _ref} -> :ok
     end
@@ -91,7 +97,7 @@ defmodule HiveMonitor.SocketClient do
     {:ok, state}
   end
   def handle_info(message, _transport, state) do
-    Logger.warn("Unhandled message #{inspect message}")
+    Logger.warn(fn -> "Unhandled message #{inspect message}" end)
     {:ok, state}
   end
 

@@ -15,7 +15,7 @@ defmodule HiveMonitor.TestHandler do
   """
   def handle_atom(atom) do
     message = "Test Handler got the atom: (#{atom.application}, #{atom.context}, #{atom.process})"
-    Logger.info(message)
+    Logger.info(fn -> message end)
 
     true
   end

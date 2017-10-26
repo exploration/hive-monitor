@@ -131,9 +131,11 @@ defmodule HiveMonitor.Router do
       case Map.fetch(known_triplets, triplet) do
         {:ok, module_list} ->
           Enum.map(module_list, fn module ->
-            Logger.info("ATOM received (#{atom.application}" <>
+            Logger.info(fn ->
+                "ATOM received (#{atom.application}" <>
                 ",#{atom.context},#{atom.process})" <>
-                ", routing to #{to_string module}")
+                ", routing to #{to_string module}"
+            end)
             Task.async(module, :handle_atom, [atom])
           end)
         :error -> 

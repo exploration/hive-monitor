@@ -40,7 +40,7 @@ defmodule HiveMonitor.NotificationHandler do
           "emails": :send_email_notifications
         )
         put_receipt(atom, status_list)
-      error -> Logger.error(inspect(error))
+      error -> Logger.error(fn -> inspect(error) end)
     end
   end
 
@@ -54,7 +54,9 @@ defmodule HiveMonitor.NotificationHandler do
       room: data["room"]
     )
     status = parse_status_code(response.status_code)
-    if(status == {:ok, :sent}, do: Logger.info("chat notification(s) sent"))
+    if status == {:ok, :sent} do
+      Logger.info(fn -> "chat notification(s) sent" end)
+    end
     status
   end
 
@@ -66,7 +68,9 @@ defmodule HiveMonitor.NotificationHandler do
       message, email_list, from: data["from"], subject: data["subject"]
     )
     status = parse_status_code(response.status_code)
-    if(status == {:ok, :sent}, do: Logger.info("email notification(s) sent"))
+    if status == {:ok, :sent} do
+      Logger.info(fn -> "email notification(s) sent" end)
+    end
     status
   end
 
@@ -81,7 +85,7 @@ defmodule HiveMonitor.NotificationHandler do
       end)
     case Enum.any?(status_list, &({:ok, :sent} == &1)) do
       true -> 
-        Logger.info("sms notification(s) sent")
+        Logger.info(fn -> "sms notification(s) sent" end)
         {:ok, :sent}
       false -> {:error, :send_sms}
     end

@@ -17,7 +17,7 @@ defmodule HiveMonitor.GenericHandler do
     message = "Generic Handler got the atom: (#{atom.application}" <>
         ", #{atom.context}, #{atom.process})"
 
-    Logger.info(message)
+    Logger.info(fn -> message end)
     Explo.Util.HipChat.send_notification(message, recipients)
     true
   end

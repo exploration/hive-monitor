@@ -54,9 +54,10 @@ defmodule HiveMonitor.Handler do
           Explo.HiveService.get_unseen_atoms(
             receiving_app, application, context, process
           )
-        Logger.info("handling #{Enum.count(atom_list)} missed atoms from " <>
+        Logger.info(fn -> 
+          "handling #{Enum.count(atom_list)} missed atoms from " <>
           "#{application}:#{context}:#{process} for #{receiving_app}"
-        )
+        end)
 
         Enum.each(atom_list, fn atom -> HiveMonitor.Router.route(atom) end)
       end)
