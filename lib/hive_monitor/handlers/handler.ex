@@ -8,6 +8,7 @@ defmodule HiveMonitor.Handler do
   require Logger
 
   alias Explo.HiveAtom
+  alias HiveMonitor.Router
 
 
   @doc """
@@ -44,7 +45,7 @@ defmodule HiveMonitor.Handler do
   handler application name, and handle them.
   """
   def handle_missed_atoms do
-    known_triplets = HiveMonitor.Router.known_triplets()
+    known_triplets = Router.known_triplets()
     Enum.each(known_triplets, fn known_triplet ->
       {{application, context, process}, handler_list} = known_triplet
 
@@ -59,7 +60,9 @@ defmodule HiveMonitor.Handler do
           "#{application}:#{context}:#{process} for #{receiving_app}"
         end)
 
-        Enum.each(atom_list, fn atom -> HiveMonitor.Router.route(atom) end)
+        Enum.each(atom_list, fn atom -> 
+          atom |> Map.from_struct |> Router.route
+        end)
       end)
     end)
   end
