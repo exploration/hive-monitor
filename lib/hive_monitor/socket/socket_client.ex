@@ -67,6 +67,7 @@ defmodule HiveMonitor.SocketClient do
     route(payload)
     {:ok, state}
   end
+
   def handle_message(topic, event, payload, _transport, state) do
     Logger.warn(fn -> 
       "message on topic #{topic}: #{event} #{inspect payload}"
