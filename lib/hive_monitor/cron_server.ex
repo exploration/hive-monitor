@@ -1,15 +1,15 @@
 defmodule HiveMonitor.CronServer do
 
   @moduledoc """
-  The CronServer is an attempt to consolidate all HIVE-related chores into
-  this one HiveMonitor zone. Typically in a HIVE system, you'll have certain
-  chores like shell scripts, remote triggers, etc. that need to be run on a
-  periodic timer (because not everything can be fully realtime eg. in
-  FileMaker systems). 
+  The CronServer is an attempt to consolidate all HIVE-related chores into this
+  one HiveMonitor zone. Typically in a HIVE system, you'll have certain chores
+  like shell scripts, remote triggers, etc. that need to be run on a periodic
+  timer (because not everything can be fully realtime eg. in FileMaker
+  systems). 
   
-  The idea is that you make shell scripts or other
-  system scripts to run the periodic maintenance tasks, and then you can run
-  them periodically using this CronServer.  
+  The idea is that you make shell scripts or other system scripts to run the
+  periodic maintenance tasks, and then you can run them periodically using this
+  CronServer.  
   """
 
   use GenServer
@@ -33,8 +33,8 @@ defmodule HiveMonitor.CronServer do
   
   @doc """
   Starts the CronServer running. You don't typically need to do this by hand.
-  You can't pass methods to this server, instead use the :hive_monitor
-  :crons config variable to send them in.
+  You can't pass methods to this server, instead use the :hive_monitor :crons
+  config variable to send them in.
   """
   def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -44,7 +44,8 @@ defmodule HiveMonitor.CronServer do
   Add a new Cron. Send it a %Cron{} struct with a unique name, and it'll be
   happy.
 
-  Returns the Cron, with an updated timer reference, on success. Returns {:error, "description"} otherwise.
+  Returns the Cron, with an updated timer reference, on success.
+  Returns {:error, "description"} otherwise.
   """
   def add_cron(cron) do
     GenServer.call(__MODULE__, {:add_cron, cron})
