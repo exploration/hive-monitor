@@ -32,8 +32,8 @@ system:
 
     config :hive_monitor,
       application_name: "can_be_customized",
-      crons: "output of HiveMonitor.CronServer.list_crons_map()",
-      known_triplets: "output of HiveMonitor.Router.known_triplets()"
+      crons: "output of HiveMonitor.CronServer.get_config()",
+      known_triplets: "output of HiveMonitor.Router.get_config()"
 
 Check the related modules for more details about how to preconfigure/save
 triplet/module maps and "Cron" jobs.

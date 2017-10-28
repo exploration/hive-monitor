@@ -42,14 +42,15 @@ defmodule HiveMonitor.Router do
   end
 
   @doc """
-  Returns all known triplets, along with the list of any handlers associated with each triplet, as a map.
+  Returns all known triplets, along with the list of any handlers associated
+  with each triplet, as a map.
 
   The output of this function can be copy/pasted into the config variable
   `:hive_monitor, :known_triplets`, which is handy for when you've made
-  configuration changes on-the-fly but want to store them in the
-  configuration file for when you eventually restart.
+  configuration changes on-the-fly but want to store them in the configuration
+  file for when you eventually restart.
   """
-  def known_triplets() do
+  def get_config() do
     GenServer.call(__MODULE__, {:known_triplets})
   end
 

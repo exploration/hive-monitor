@@ -86,7 +86,7 @@ defmodule HiveMonitor.CronServer do
   copy/pasting into the `:hive_monitor, :crons` config variable for when you've
   made changes to the server on-the-fly and want to store them.
   """
-  def list_crons_map() do
+  def get_config() do
     crons = GenServer.call(__MODULE__, :list_crons)
     Enum.map(crons, fn(cron) ->
       %{
