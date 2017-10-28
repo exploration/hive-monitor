@@ -2,9 +2,9 @@ defmodule HiveMonitor.HiveSupervisor do
   use Supervisor
 
   @moduledoc """
-    This supervisor handles all processes related to HIVE-specific parsing,
-    such as the HIVE atom router, and the CRON server for keeping external
-    processes in sync.
+  This supervisor handles all processes related to HIVE-specific parsing,
+  such as the HIVE atom router, and the CRON server for keeping external
+  processes in sync.
   """
 
   def start_link(_args) do
