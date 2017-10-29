@@ -1,8 +1,11 @@
 defmodule HiveMonitor.Handler do
   @moduledoc """
   Hive Monitor defines a "Handler" as "a module that can take a HIVE atom and
-  do something useful with it." As such, a Handler really only needs one
-    function: `handle_atom`.
+  do something useful with it." 
+
+  This module defines callbacks necessary for anything that wants to be a
+  handler, as well as some utility functions that get called in a lot of
+  Handler contexts.
   """
 
   require Logger
