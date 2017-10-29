@@ -21,7 +21,7 @@ config :hive_monitor, crons: [
     module: HiveMonitor.Handler,
     fun: :handle_missed_atoms,
     args: [],
-    rate: :timer.hours(24)
+    rate: :timer.hours(4)
   },
   %{
     name: "echo_hello",
