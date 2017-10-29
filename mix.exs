@@ -36,7 +36,8 @@ defmodule HiveMonitor.Mixfile do
       {:phoenix, "~> 1.3"},
       {:poison, "~> 3.1"},
       {:httpoison, "~> 0.13"},
-      {:explo, git: "bitbucket.org:explo/explo-elixir-utilities.git"}
+      {:explo, git: "bitbucket.org:explo/explo-elixir-utilities.git"},
+      {:logger_file_backend, "~> 0.0.10"}
     ]
   end
 end
