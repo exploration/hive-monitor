@@ -141,12 +141,13 @@ defmodule HiveMonitor.CronServer do
   end
 
   def handle_call({:delete_cron, name}, _from, state) do
-    new_state = case find_name_index(state, name) do
-      :no_match -> state
-      index -> 
-        cancel_timer(Enum.at(state, index))
-        List.delete_at(state, index)
-    end
+    new_state = 
+      case find_name_index(state, name) do
+        :no_match -> state
+        index -> 
+          cancel_timer(Enum.at(state, index))
+          List.delete_at(state, index)
+      end
 
     {:reply, new_state, new_state}
   end
@@ -177,9 +178,7 @@ defmodule HiveMonitor.CronServer do
 
   def handle_info({:EXIT, _pid, reason}, state) do
     Logger.info(fn -> "Quitting CronServer because: #{inspect reason}." end)
-    Enum.each(state, fn(cron) ->
-      cancel_timer(cron)
-    end)
+    Enum.each(state, &cancel_timer/1)
     {:noreply, state}
   end
 
@@ -190,6 +189,9 @@ defmodule HiveMonitor.CronServer do
 
 
 
+  #----------------#
+  # Helper Methods #
+  #----------------#
 
   # Cancel the Erlang timer for the given Cron (if there is a proper timer
   # reference)
@@ -256,9 +258,9 @@ defmodule HiveMonitor.CronServer do
     end
   end
 
-  #Activate the timer for the given Cron using the Erlang :timer library.
-  #Only activates the timer if there is no current timer reference.
-  #See http://erlang.org/doc/man/timer.html for details
+  # Activate the timer for the given Cron using the Erlang :timer library.
+  # Only activates the timer if there is no current timer reference.
+  # See http://erlang.org/doc/man/timer.html for details
   defp set_timer(cron) do
     case cron.ref do
       nil -> 
@@ -271,3 +273,4 @@ defmodule HiveMonitor.CronServer do
     end
   end
 end
+
