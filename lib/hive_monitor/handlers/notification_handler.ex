@@ -5,7 +5,7 @@ defmodule HiveMonitor.NotificationHandler do
   any system. It expects atom.data in the format:
 
       {
-        message: String
+        message: String (required)
         from: String (optional name of the sender)
 
         chat_handles: [String] (optional list of chat handles of recipients)
@@ -27,8 +27,8 @@ defmodule HiveMonitor.NotificationHandler do
   def application_name(), do: HiveMonitor.application_name()
 
   @doc """
-    Inspect the atom for information about what types of notifications to send,
-    then route to the appropriate system (SMS, Email, Chat).
+  Inspect the atom for information about what types of notifications to send,
+  then route to the appropriate system (SMS, Email, Chat).
   """
   def handle_atom(atom) do
     case Poison.decode(atom.data) do
