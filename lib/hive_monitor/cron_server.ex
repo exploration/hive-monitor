@@ -100,7 +100,9 @@ defmodule HiveMonitor.CronServer do
     end)
   end
 
-  @doc false
+  @doc """
+  Given a %Cron{}, run its Module/Function/Args.
+  """
   def execute_cron(cron) do
     Logger.info("CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
         "#{inspect cron.module} #{inspect cron.fun} #{inspect cron.args}")
@@ -123,9 +125,10 @@ defmodule HiveMonitor.CronServer do
     cronit = fn(map) -> struct(Cron, map) end
     crons = cron_maps |> Enum.map(cronit)
 
-    state = Enum.map(crons, fn(cron) -> set_timer(cron) end)
+    state = Enum.map(crons, fn(cron) -> delay_then_init(cron) end)
     {:ok, state}
   end
+
 
   def handle_call({:add_cron, cron}, _from, state) do
     case find_name(state, cron.name) do
@@ -167,6 +170,11 @@ defmodule HiveMonitor.CronServer do
     end
   end
 
+  def handle_info({:set_timer, cron}, state) do
+    set_timer(cron)
+    {:noreply, state}
+  end
+
   def handle_info({:EXIT, _pid, reason}, state) do
     Logger.info(fn -> "Quitting CronServer because: #{inspect reason}." end)
     Enum.each(state, fn(cron) ->
@@ -195,7 +203,34 @@ defmodule HiveMonitor.CronServer do
     end
   end
 
-  # Erlang timer functions return TRefs. This function will convert the timer reference into the proper format to be compatible with Erlang's Timer library.
+  # If we don't slightly delay timer initialization, we'll get a situation
+  # where every single %Cron{} will start at the exact same time, and then get
+  # re-started at the exact same time when they overlap.
+  #
+  # For example, if you have a Cron every 15 seconds, and another every 30,
+  # then every 30 seconds both of your Crons will fire. This can cause problems
+  # with loading systems, so it's better to stagger the starting of those
+  # Crons.
+  #
+  # The default "spread" of this timer is 5 minutes, but it can be configured
+  # with the :hive_monitor, :cron_init_spread configuration variable.
+  defp delay_then_init(cron) do
+    spread = 
+      Application.get_env(:hive_monitor, :cron_init_spread) ||
+      :timer.minutes(5)
+    start_time = :rand.uniform(spread) 
+
+    Logger.info(fn -> 
+      "Starting #{inspect cron.name}'s timer in " <>
+      "#{inspect(start_time / 1000 |> Float.round())} seconds."
+    end)
+
+    Process.send_after(__MODULE__, {:set_timer, cron}, start_time)
+  end
+
+  # Erlang timer functions return TRefs. This function will convert the timer
+  # reference into the proper format to be compatible with Erlang's Timer
+  # library.
   # See http://erlang.org/doc/man/timer.html for details
   defp ref_to_tref(reference) do
     {:interval, reference}

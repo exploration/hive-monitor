@@ -32,8 +32,11 @@ system:
 
     config :hive_monitor,
       application_name: "can_be_customized",
-      crons: "output of HiveMonitor.CronServer.get_config()",
       known_triplets: "output of HiveMonitor.Router.get_config()"
+      crons: "output of HiveMonitor.CronServer.get_config()",
+      # The amount of time within which your initial batch of Crons will get
+      # randomly started:
+      cron_init_spread: :timer.minutes(3)
 
 Check the related modules for more details about how to preconfigure/save
 triplet/module maps and "Cron" jobs.
