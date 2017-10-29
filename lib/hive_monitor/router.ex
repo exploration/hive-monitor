@@ -135,7 +135,7 @@ defmodule HiveMonitor.Router do
 
     task_list = 
       case Map.fetch(known_triplets, triplet) do
-        {:ok, module_list} ->
+        {:ok, module_list} when is_list(module_list) ->
           Enum.map(module_list, fn module ->
             Logger.info(fn ->
                 "ATOM received (#{atom.application}" <>
@@ -146,6 +146,8 @@ defmodule HiveMonitor.Router do
           end)
         :error -> 
           [Task.async(GenericHandler, :handle_atom, [atom])]
+        _ ->
+          Logger.error(fn -> "Can't route, module list format error" end)
       end
 
     Enum.each(task_list, fn pid -> Task.await(pid) end)
