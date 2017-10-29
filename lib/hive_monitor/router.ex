@@ -93,12 +93,13 @@ defmodule HiveMonitor.Router do
 
   @doc false
   def handle_call({:add_handler, triplet, handler}, _from, known_triplets) do
-    new_state = Map.update(known_triplets, triplet, [handler], fn handler_list ->
-      case Enum.find(handler_list, fn v -> v == handler end) do
-        nil -> [handler | handler_list]
-        _ -> handler_list
-      end
-    end)
+    new_state = 
+      Map.update(known_triplets, triplet, [handler], fn handler_list ->
+        case Enum.find(handler_list, fn v -> v == handler end) do
+          nil -> [handler | handler_list]
+          _ -> handler_list
+        end
+      end)
 
     {:reply, new_state, new_state}
   end
@@ -110,9 +111,10 @@ defmodule HiveMonitor.Router do
 
   @doc false
   def handle_call({:remove_handler, triplet, handler}, _from, known_triplets) do
-    new_state = Map.update(known_triplets, triplet, [], fn handler_list ->
-      List.delete handler_list, handler
-    end)
+    new_state = 
+      Map.update(known_triplets, triplet, [], fn handler_list ->
+        List.delete(handler_list, handler)
+      end)
 
     new_state = 
       case Map.fetch(new_state, triplet) do
@@ -123,7 +125,10 @@ defmodule HiveMonitor.Router do
     {:reply, new_state, new_state}
   end
 
-  @doc false
+  @doc """
+  Attempt to asynchronously route the atom to all known handlers
+  simultaneously. If no known handlers exist, route to the GenericHandler.
+  """
   def handle_cast({:route, atom_map}, known_triplets) do
     atom = HiveAtom.from_map(atom_map) 
     triplet = HiveAtom.triplet(atom)
