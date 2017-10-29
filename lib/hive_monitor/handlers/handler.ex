@@ -45,7 +45,7 @@ defmodule HiveMonitor.Handler do
   handler application name, and handle them.
   """
   def handle_missed_atoms do
-    known_triplets = Router.known_triplets()
+    known_triplets = Router.get_config()
     Enum.each(known_triplets, fn known_triplet ->
       {{application, context, process}, handler_list} = known_triplet
 

@@ -24,18 +24,18 @@ defmodule RouterTest do
 
   describe "Test adding + removing handlers: " do
     test "Known triplets is a map" do
-      assert is_map Router.known_triplets()
+      assert is_map Router.get_config()
     end
 
     test "Known triplets is returned by add_handler and remove_handler", %{triplet: triplet, handler: handler} do
 
       added_triplets = Router.add_handler(triplet, handler)
-      known_triplets = Router.known_triplets()
+      known_triplets = Router.get_config()
       refute Enum.empty? known_triplets
       assert added_triplets == known_triplets
 
       removed_triplets = Router.remove_handler(triplet, handler)
-      known_triplets = Router.known_triplets()
+      known_triplets = Router.get_config()
       assert removed_triplets == known_triplets
     end
 
