@@ -5,7 +5,6 @@ defmodule HiveMonitor.PortalHandler do
   """
 
   alias HiveMonitor.Handler
-
   @behaviour Handler
 
   @portal_token 'dd674122358db45f7a1f76e11328ed20'

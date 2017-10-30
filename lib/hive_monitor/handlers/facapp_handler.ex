@@ -8,6 +8,7 @@ defmodule HiveMonitor.FacAppHandler do
 
   @behaviour Handler
 
+  # TODO: move this token out of the source code
   @api_token '29797ffedcfbfb0e855d19972ae1656d1b8d5dbcf9602a59823fa688e'
   @api_url 'http://facapp.lab.explo.org/hive/incoming_atoms'
 
