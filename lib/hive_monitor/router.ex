@@ -138,9 +138,9 @@ defmodule HiveMonitor.Router do
         {:ok, module_list} when is_list(module_list) ->
           Enum.map(module_list, fn module ->
             Logger.info(fn ->
-                "ATOM received (#{atom.application}" <>
-                ",#{atom.context},#{atom.process})" <>
-                ", routing to #{to_string module}"
+              "ATOM received (#{atom.application}" <>
+              ",#{atom.context},#{atom.process})" <>
+              ", routing to #{to_string module}"
             end)
             Task.async(module, :handle_atom, [atom])
           end)
