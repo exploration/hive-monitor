@@ -49,18 +49,17 @@ defmodule HiveMonitor.Handler do
   """
   def handle_missed_atoms do
     known_triplets = Router.get_config()
+
     Enum.each(known_triplets, fn known_triplet ->
-      {{application, context, process}, handler_list} = known_triplet
+      {triplet, handler_list} = known_triplet
 
       Enum.each(handler_list, fn handler ->
         receiving_app = apply(handler, :application_name, [])
-        atom_list = 
-          Explo.HiveService.get_unseen_atoms(
-            receiving_app, application, context, process
-          )
+        atom_list = Explo.HiveService.get_unseen_atoms(receiving_app, triplet)
+
         Logger.info(fn -> 
           "handling #{Enum.count(atom_list)} missed atoms from " <>
-          "#{application}:#{context}:#{process} for #{receiving_app}"
+          "#{inspect triplet} for #{receiving_app}"
         end)
 
         Enum.each(atom_list, fn atom -> 
