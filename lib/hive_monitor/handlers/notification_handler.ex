@@ -40,7 +40,8 @@ defmodule HiveMonitor.NotificationHandler do
           "emails": :send_email_notifications
         )
         put_receipt(atom, status_list)
-      error -> Logger.error(fn -> inspect(error) end)
+      {:error, reason} -> 
+        Logger.error(fn -> "Notification JSON error: #{inspect(reason)}" end)
     end
   end
 
