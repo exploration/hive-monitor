@@ -76,6 +76,13 @@ defmodule HiveMonitor.Router do
   def route(atom) when is_map(atom) do
     GenServer.cast(__MODULE__, {:route, atom})
   end
+  @doc """
+  This is a synchronous version of route, which is handy for testing because it
+  returns the results of each handle_atom() method called by a Handler.
+  """
+  def route(atom, :await) when is_map(atom) do
+    GenServer.call(__MODULE__, {:route, atom})
+  end
 
 
   #----------------#
@@ -130,11 +137,22 @@ defmodule HiveMonitor.Router do
     {:reply, new_state, new_state}
   end
 
-  @doc """
-  Attempt to asynchronously route the atom to all known handlers
-  simultaneously. If no known handlers exist, route to the GenericHandler.
-  """
+  @doc false
+  def handle_call({:route, atom_map}, _from, known_triplets) do
+    result = do_routing(atom_map, known_triplets)
+    {:reply, result, known_triplets}
+  end
+
+  @doc false
   def handle_cast({:route, atom_map}, known_triplets) do
+    do_routing(atom_map, known_triplets)
+    {:noreply, known_triplets}
+  end
+
+
+  # Attempt to asynchronously route the atom to all known handlers
+  # simultaneously. If no known handlers exist, route to the GenericHandler.
+  defp do_routing(atom_map, known_triplets) do
     atom = HiveAtom.from_map(atom_map) 
     triplet = HiveAtom.triplet(atom)
 
@@ -155,9 +173,7 @@ defmodule HiveMonitor.Router do
           Logger.error(fn -> "Can't route, module list format error" end)
       end
 
-    Enum.each(task_list, fn pid -> Task.await(pid) end)
-
-    {:noreply, known_triplets}
+    Enum.map(task_list, fn pid -> Task.await(pid) end)
   end
   
 end
