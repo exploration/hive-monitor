@@ -2,14 +2,17 @@ defmodule HiveMonitor.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :hive_monitor,
-     version: "0.3.4",
-     elixir: "~> 1.5",
-     elixirc_paths: elixirc_paths(Mix.env),
-     compilers: Mix.compilers,
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps()]
+    [
+      app: :hive_monitor,
+      version: "0.3.4",
+      elixir: "~> 1.5",
+      elixirc_paths: elixirc_paths(Mix.env),
+      compilers: Mix.compilers,
+      build_embedded: Mix.env == :prod,
+      start_permanent: Mix.env == :prod,
+      deps: deps(),
+      aliases: aliases()
+    ]
   end
 
   # Configuration for the OTP application.
@@ -21,10 +24,12 @@ defmodule HiveMonitor.Mixfile do
       extra_applications: [:logger]
     ]
   end
-
-  # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "web", "test/support"]
-  defp elixirc_paths(_),     do: ["lib", "web"]
+  
+  defp aliases do
+    [
+      test: "test --no-start"
+    ]
+  end
 
   # Specifies your project dependencies.
   #
@@ -40,4 +45,8 @@ defmodule HiveMonitor.Mixfile do
       {:logger_file_backend, "~> 0.0.10"}
     ]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "web", "test/support"]
+  defp elixirc_paths(_),     do: ["lib", "web"]
 end
