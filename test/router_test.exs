@@ -1,24 +1,28 @@
 defmodule RouterTest do
   use ExUnit.Case, async: true
+  require Logger
+  import ExUnit.CaptureLog
   alias HiveMonitor.Router
 
   setup do
-    atom = %{
+    atom_map = %{
       "application" => "test_application",
       "context" => "test_context",
       "process" => "test_process",
       "data" => ~s({"hello":"world"})
     }
-    triplet = {atom["application"], atom["context"], atom["process"]}
-    handler = HiveMonitor.GenericHandler
-    test_handler = HiveMonitor.TestHandler
+    triplet = {
+      atom_map["application"], atom_map["context"], atom_map["process"]
+    }
+    handler = HiveMonitor.TestHandler
+    alt_handler = HiveMonitor.GenericHandler
 
     {
       :ok,
       triplet: triplet,
       handler: handler,
-      test_handler: test_handler,
-      atom: atom
+      alt_handler: alt_handler,
+      atom_map: atom_map
     }
   end
 
@@ -79,14 +83,34 @@ defmodule RouterTest do
     end
     
     test "Removing a non-unique handler keeps the triplet entry",
-        %{triplet: triplet, handler: handler, test_handler: test_handler} do
+        %{triplet: triplet, handler: handler, alt_handler: alt_handler} do
       {:ok, _} = start_supervised({Router, [known_triplets: %{}]})
 
       Router.add_handler(triplet, handler)
-      Router.add_handler(triplet, test_handler)
-      known_triplets = Router.remove_handler(triplet, test_handler)
+      Router.add_handler(triplet, alt_handler)
+      known_triplets = Router.remove_handler(triplet, alt_handler)
 
       assert {:ok, [handler]} == Map.fetch(known_triplets, triplet)
+    end
+  end
+
+  describe "routing: " do
+    test "routing to an atom returns a list of routing statuses",
+        %{atom_map: atom_map, triplet: triplet, handler: handler} do
+      {:ok, _} = start_supervised({Router, [known_triplets: %{}]})
+      Router.add_handler(triplet, handler)
+
+      assert [true] = Router.route(atom_map, :await)
+    end
+
+    test "routing to an atom ends up at a handler",
+        %{atom_map: atom_map, triplet: triplet, handler: handler} do
+      {:ok, _} = start_supervised({Router, [known_triplets: %{}]})
+      Router.add_handler(triplet, handler)
+
+      atom = Explo.HiveAtom.from_map(atom_map)
+      capture = capture_log(fn -> Router.route(atom_map, :await) end) 
+      assert capture =~ "Test Handler: #{inspect atom}"
     end
   end
 
