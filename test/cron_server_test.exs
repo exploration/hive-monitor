@@ -1,5 +1,5 @@
 defmodule CronServerTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias HiveMonitor.CronServer
   alias HiveMonitor.CronServer.Cron
 
@@ -7,9 +7,12 @@ defmodule CronServerTest do
     { :ok, cron_name: "test" }
   end
 
-  describe "Cron CRUD" do
-    test "Crons state is a list of Crons", %{cron_name: cron_name} do
+  describe "cron CRUD: " do
+    test "crons state is a list of Crons", %{cron_name: cron_name} do
+      {:ok, _} = start_supervised({CronServer, []})
+
       CronServer.add_cron(%Cron{name: cron_name})
+      
       crons_list = CronServer.list_crons()
       assert is_list(crons_list)
 
@@ -17,17 +20,54 @@ defmodule CronServerTest do
       assert first_cron.__struct__ == Cron
     end
 
-    test "Adding a new Cron adds that cron to the Cron list", %{cron_name: cron_name} do
+    test "crons config is a list of proper maps", %{cron_name: cron_name} do
+      {:ok, _} = start_supervised({CronServer, []})
+
       CronServer.add_cron(%Cron{name: cron_name})
-      initial_list = CronServer.list_crons
-      CronServer.add_cron(%Cron{name: "snarfblatt"})
-      updated_list = CronServer.list_crons
-      
-      assert Enum.count(initial_list) + 1 == Enum.count(updated_list)
-      refute Enum.find(updated_list, :nothing, &(&1.name == cron_name)) == :nothing
+      config = CronServer.get_config()
+
+      assert is_list(config)
+
+      rando_config = Enum.random(config)
+      assert %{name: _, module: _, fun: _, args: _, rate: _} = rando_config
     end
 
-    test "Adding a new Cron returns a Cron with a timer reference" do
+    test "cronserver loads the passed config on start",
+        %{cron_name: cron_name} do
+      cron = %Cron{name: cron_name, ref: nil}
+      cron_map = Map.from_struct(cron)
+
+      {:ok, _} = start_supervised({CronServer, [crons: [cron_map]]})
+
+      crons = CronServer.list_crons()
+      assert Enum.at(crons, 0) == cron
+    end
+
+    test "adding a new Cron adds that cron to the Cron list",
+        %{cron_name: cron_name} do
+      {:ok, _} = start_supervised({CronServer, []})
+
+      CronServer.add_cron(%Cron{name: cron_name})
+      CronServer.add_cron(%Cron{name: cron_name <> "woo"})
+      crons = CronServer.list_crons()
+      assert Enum.count(crons) == 2
+
+      matches = Enum.find(crons, :nothing, &(&1.name == cron_name)) 
+      refute matches == :nothing
+    end
+
+    test "can't add a duplicate Cron by name", %{cron_name: cron_name} do
+      {:ok, _} = start_supervised({CronServer, []})
+
+      cron = %Cron{name: cron_name}
+      CronServer.add_cron(cron)
+
+      assert {:error, _} = CronServer.add_cron(cron)
+    end
+
+    test "adding a new Cron returns a Cron with a timer reference" do
+      {:ok, _} = start_supervised({CronServer, []})
+
       cron = %Cron{name: "timer_reference_test"}
       assert is_nil(cron.ref)
 
@@ -35,20 +75,20 @@ defmodule CronServerTest do
       assert is_reference(updated_cron.ref)
     end
 
-    test "Can't add a duplicate Cron by name", %{cron_name: cron_name} do
-      CronServer.add_cron(%Cron{name: cron_name})
-      assert {:error, _} = CronServer.add_cron(%Cron{name: cron_name})
-    end
+    test "deleting a Cron removes it from the state",
+        %{cron_name: cron_name} do
+      {:ok, _} = start_supervised({CronServer, []})
 
-    test "Deleting a Cron removes it from the list", %{cron_name: cron_name} do
       CronServer.add_cron(%Cron{name: cron_name})
       CronServer.delete_cron(cron_name)
-      updated_list = CronServer.list_crons
+      crons = CronServer.list_crons
 
-      assert Enum.find(updated_list, :nothing, &(&1.name == cron_name)) == :nothing
+      assert Enum.find(crons, :nothing, &(&1.name == cron_name)) == :nothing
     end
 
-    test "Updating a Cron's time", %{cron_name: cron_name} do
+    test "updating a Cron's time", %{cron_name: cron_name} do
+      {:ok, _} = start_supervised({CronServer, []})
+
       cron = %Cron{name: cron_name, rate: :timer.seconds(12)}
       CronServer.add_cron(cron)
       updated_cron = CronServer.update_rate(cron.name, :timer.seconds(54))
@@ -56,5 +96,39 @@ defmodule CronServerTest do
       assert updated_cron.rate == :timer.seconds(54)
       refute cron.rate == updated_cron.rate
     end
+  end
+
+  describe "cron execution: " do
+    test "execute a Cron" do
+      {:ok, _} = start_supervised({CronServer, []})
+
+      cron = %Cron{
+        name: "execute", 
+        module: __MODULE__, fun: :ping, args: [self(), :execute]
+      }
+      CronServer.execute_cron(cron)
+
+      assert_receive(:execute)
+    end
+
+    test "execute a Cron at the moment that it's added" do
+      {:ok, _} = start_supervised({CronServer, []})
+
+      rate = 1 # milliseconds
+      cron = %Cron{
+        name: "add_cron", 
+        module: __MODULE__, fun: :ping, args: [self(), :add_cron], rate: rate
+      }
+      CronServer.add_cron(cron)
+
+      # It should take 1ms to start the timer, then another 1ms to run the
+      # function. We are assuming that it'll take at most 50ms to process a
+      # reply. (It hasn't failed in thousands of tests)
+      assert_receive(:add_cron, 50)
+    end
+  end
+
+  def ping(pid, msg) do
+    Process.send(pid, msg, [])
   end
 end
