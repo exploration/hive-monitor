@@ -26,8 +26,8 @@ defmodule HiveMonitor.Router do
   @doc """
   Start this Router. Typically called by a Supervisor function.
   """
-  def start_link(_args) do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   @doc """
@@ -85,8 +85,13 @@ defmodule HiveMonitor.Router do
   @doc """
   The state that this server contains is "known triplets" from HIVE
   """
-  def init(:ok) do
-    known_triplets = Application.get_env(:hive_monitor, :known_triplets) || %{}
+  def init(args) do
+    config = Application.get_env(:hive_monitor, :known_triplets) || %{}
+    known_triplets = 
+      case Keyword.fetch(args, :known_triplets) do
+        {:ok, triplets} when is_map(triplets) -> triplets |> Map.merge(config)
+        :error -> config
+      end
 
     {:ok, known_triplets}
   end
