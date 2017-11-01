@@ -36,13 +36,13 @@ defmodule HiveMonitor.CronServer do
   You can't pass methods to this server, instead use the :hive_monitor :crons
   config variable to send them in.
   """
-  def start_link(_args) do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   @doc """
   Add a new Cron. Send it a %Cron{} struct with a unique name, and it'll be
-  happy.
+  happy. When a Cron is added by hand, its timer is started immediately.
 
   Returns the Cron, with an updated timer reference, on success.
   Returns {:error, "description"} otherwise.
@@ -115,17 +115,21 @@ defmodule HiveMonitor.CronServer do
   # Server Methods #
   #----------------#
 
-  def init(:ok) do
+  def init(args) do
     # Make sure that we run terminate() on exit.
     Process.flag(:trap_exit, true)
 
+    cron_maps =
+      Application.get_env(:hive_monitor, :crons) ++
+      Keyword.get(args, :crons, [])
+
     # We can't pass %Cron{}s from the config, so we have to use maps, and then
     # convert them to %Cron{}s here.
-    cron_maps = Application.get_env(:hive_monitor, :crons) || []
-    cronit = fn(map) -> struct(Cron, map) end
-    crons = cron_maps |> Enum.map(cronit)
+    state = 
+      cron_maps
+      |> Enum.map(&(struct(Cron, &1)))
+      |> Enum.map(&delay_then_init/1)
 
-    state = Enum.map(crons, fn(cron) -> delay_then_init(cron) end)
     {:ok, state}
   end
 
@@ -228,6 +232,8 @@ defmodule HiveMonitor.CronServer do
     end)
 
     Process.send_after(__MODULE__, {:set_timer, cron}, start_time)
+
+    cron
   end
 
   # Erlang timer functions return TRefs. This function will convert the timer
@@ -264,10 +270,11 @@ defmodule HiveMonitor.CronServer do
   defp set_timer(cron) do
     case cron.ref do
       nil -> 
-        Logger.info(fn -> "CronServer activating #{cron.name}" <>
-            " every #{cron.rate / 1000}s" end )
+        Logger.info(fn -> 
+          "CronServer activating #{cron.name}" <> " every #{cron.rate / 1000}s"
+        end )
         {:ok, {:interval, ref}} = 
-            :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
+          :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
         %{cron | ref: ref}
       _ -> cron
     end
