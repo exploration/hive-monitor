@@ -14,7 +14,7 @@ defmodule HiveMonitor.PortalHandler do
   def application_name(), do: "portal_production"
 
   @doc false
-  def handle_atom(atom) do
+  def handle_atom(%Explo.HiveAtom{} = atom) do
     atom_encoded = Handler.atom_to_uri_query(atom)
 
     body = "atom=#{atom_encoded}&portal_token=#{@portal_token}"
@@ -22,8 +22,13 @@ defmodule HiveMonitor.PortalHandler do
         "User-Agent": "HIVE Monitor",
         "Content-Type": "application/x-www-form-urlencoded"
     ]
-    HTTPoison.post @portal_url, body, headers
 
-    true
+    {:ok, %{status_code: status_code}} = 
+      HTTPoison.post @portal_url, body, headers
+
+    case(Enum.member?(200..299, status_code)) do
+      true -> {:ok, :success}
+      false -> :error
+    end
   end
 end

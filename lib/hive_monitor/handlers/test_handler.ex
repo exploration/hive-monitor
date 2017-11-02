@@ -16,7 +16,8 @@ defmodule HiveMonitor.TestHandler do
   def handle_atom(%Explo.HiveAtom{} = atom) do
     message = "Test Handler: #{inspect atom}"
     Logger.debug(fn -> message end)
-    true
+    
+    {:ok, :success}
   end
 
 end

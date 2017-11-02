@@ -30,7 +30,7 @@ defmodule HiveMonitor.NotificationHandler do
   Inspect the atom for information about what types of notifications to send,
   then route to the appropriate system (SMS, Email, Chat).
   """
-  def handle_atom(atom) do
+  def handle_atom(%Explo.HiveAtom{} = atom) do
     case Poison.decode(atom.data) do
       {:ok, data} ->
         status_list = run_if_not_empty( 
@@ -42,6 +42,7 @@ defmodule HiveMonitor.NotificationHandler do
         put_receipt(atom, status_list)
       {:error, reason} -> 
         Logger.error(fn -> "Notification JSON error: #{inspect(reason)}" end)
+        :error
     end
   end
 
@@ -113,8 +114,12 @@ defmodule HiveMonitor.NotificationHandler do
         put_receipt? <- is_integer(atom.id) &&
           (no_valid_statuses? || notifications_went_through?) do
 
-      if put_receipt? do
-        HiveService.put_receipt(atom.id, HiveMonitor.application_name())    
+      case put_receipt? do
+        true ->
+          HiveService.put_receipt(atom.id, HiveMonitor.application_name())    
+          {:ok, :success}
+        false ->
+          :error
       end
     end
   end

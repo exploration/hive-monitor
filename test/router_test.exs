@@ -100,7 +100,7 @@ defmodule RouterTest do
       {:ok, _} = start_supervised({Router, [known_triplets: %{}]})
       Router.add_handler(triplet, handler)
 
-      assert [true] = Router.route(atom_map, :await)
+      assert [{:ok, :success}] = Router.route(atom_map, :await)
     end
 
     test "routing to an atom ends up at a handler",

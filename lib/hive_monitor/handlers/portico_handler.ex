@@ -19,12 +19,12 @@ defmodule HiveMonitor.PorticoHandler do
   FileMaker/Portico atoms are passed to a FM script, which brings them into the
   hive_data DB and passes them along to the appropriate handler within Portico.
   """
-  def handle_atom(atom) do
+  def handle_atom(%Explo.HiveAtom{} = atom) do
     url = "#{@server_url}" <>
       "?script=#{URI.encode(@script_name)}" <>
       "&param=#{Handler.atom_to_uri_query(atom)}"
     System.cmd "/usr/bin/open", [url]
 
-    true
+    {:ok, :fine}
   end
 end
