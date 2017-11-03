@@ -8,9 +8,11 @@ defmodule HiveMonitor.GenericHandler do
   require Logger
 
   @doc false
+  @impl true
   def application_name(), do: :none
 
   @doc false
+  @impl true
   def handle_atom(%Explo.HiveAtom{} = atom) do
     message = "Generic Handler got the atom: (#{atom.application}" <>
         ", #{atom.context}, #{atom.process})"

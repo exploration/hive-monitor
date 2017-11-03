@@ -24,12 +24,14 @@ defmodule HiveMonitor.NotificationHandler do
   alias Explo.Util.{HipChat, Mandrill, Twilio}
   
   @doc false
+  @impl true
   def application_name(), do: HiveMonitor.application_name()
 
   @doc """
   Inspect the atom for information about what types of notifications to send,
   then route to the appropriate system (SMS, Email, Chat).
   """
+  @impl true
   def handle_atom(%Explo.HiveAtom{} = atom) do
     case Poison.decode(atom.data) do
       {:ok, data} ->
