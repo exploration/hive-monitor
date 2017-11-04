@@ -13,14 +13,14 @@ defmodule HiveMonitor.GenericHandler do
 
   @doc false
   @impl true
-  def handle_atom(%Explo.HiveAtom{} = atom) do
+  def handle_atom(%HiveAtom{} = atom) do
     message = "Generic Handler got the atom: (#{atom.application}" <>
         ", #{atom.context}, #{atom.process})"
     Logger.info(fn -> message end)
 
     recipients = ["Donald"]
     {:ok, %{status_code: status_code}} = 
-      Explo.Util.HipChat.send_notification(message, recipients)
+      ExploComm.HipChat.send_notification(message, recipients)
 
     case(Enum.member?(200..299, status_code)) do
       true -> {:ok, :success}

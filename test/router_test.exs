@@ -108,7 +108,7 @@ defmodule RouterTest do
       {:ok, _} = start_supervised({Router, [known_triplets: %{}]})
       Router.add_handler(triplet, handler)
 
-      atom = Explo.HiveAtom.from_map(atom_map)
+      atom = HiveAtom.from_map(atom_map)
       capture = capture_log(fn -> Router.route(atom_map, :await) end) 
       assert capture =~ "Test Handler: #{inspect atom}"
     end

@@ -15,7 +15,6 @@ defmodule HiveMonitor.Router do
 
   require Logger
 
-  alias Explo.HiveAtom
   alias HiveMonitor.GenericHandler
 
 

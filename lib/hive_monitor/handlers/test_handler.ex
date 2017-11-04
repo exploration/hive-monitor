@@ -15,7 +15,7 @@ defmodule HiveMonitor.TestHandler do
   When testing, we merely log the atom
   """
   @impl true
-  def handle_atom(%Explo.HiveAtom{} = atom) do
+  def handle_atom(%HiveAtom{} = atom) do
     message = "Test Handler: #{inspect atom}"
     Logger.debug(fn -> message end)
     

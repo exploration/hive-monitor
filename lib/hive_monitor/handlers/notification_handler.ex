@@ -20,8 +20,7 @@ defmodule HiveMonitor.NotificationHandler do
 
   @behaviour HiveMonitor.Handler
   require Logger
-  alias Explo.HiveService
-  alias Explo.Util.{HipChat, Mandrill, Twilio}
+  alias ExploComm.{HipChat, Mandrill, Twilio}
   
   @doc false
   @impl true
@@ -32,7 +31,7 @@ defmodule HiveMonitor.NotificationHandler do
   then route to the appropriate system (SMS, Email, Chat).
   """
   @impl true
-  def handle_atom(%Explo.HiveAtom{} = atom) do
+  def handle_atom(%HiveAtom{} = atom) do
     case Poison.decode(atom.data) do
       {:ok, data} ->
         status_list = run_if_not_empty( 

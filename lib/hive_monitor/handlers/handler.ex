@@ -10,7 +10,6 @@ defmodule HiveMonitor.Handler do
 
   require Logger
 
-  alias Explo.HiveAtom
   alias HiveMonitor.Router
 
 
@@ -55,7 +54,7 @@ defmodule HiveMonitor.Handler do
 
       Enum.each(handler_list, fn handler ->
         receiving_app = apply(handler, :application_name, [])
-        atom_list = Explo.HiveService.get_unseen_atoms(receiving_app, triplet)
+        atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
 
         Logger.info(fn -> 
           "handling #{Enum.count(atom_list)} missed atoms from " <>

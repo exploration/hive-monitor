@@ -4,7 +4,7 @@ defmodule HiveMonitor.Mixfile do
   def project do
     [
       app: :hive_monitor,
-      version: "0.4.1",
+      version: "0.4.2",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env),
       compilers: Mix.compilers,
@@ -41,8 +41,9 @@ defmodule HiveMonitor.Mixfile do
       {:phoenix, "~> 1.3"},
       {:poison, "~> 3.1"},
       {:httpoison, "~> 0.13"},
-      {:explo, git: "bitbucket.org:explo/explo-elixir-utilities.git"},
-      {:logger_file_backend, "~> 0.0.10"}
+      {:logger_file_backend, "~> 0.0.10"},
+      {:explo_comm, git: "bitbucket.org:explo/explo-comm.git"},
+      {:hive_service, git: "bitbucket.org:explo/hive-service.git"}
     ]
   end
 

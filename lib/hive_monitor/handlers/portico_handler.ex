@@ -21,7 +21,7 @@ defmodule HiveMonitor.PorticoHandler do
   hive_data DB and passes them along to the appropriate handler within Portico.
   """
   @impl true
-  def handle_atom(%Explo.HiveAtom{} = atom) do
+  def handle_atom(%HiveAtom{} = atom) do
     url = "#{@server_url}" <>
       "?script=#{URI.encode(@script_name)}" <>
       "&param=#{Handler.atom_to_uri_query(atom)}"
