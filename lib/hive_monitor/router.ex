@@ -32,9 +32,12 @@ defmodule HiveMonitor.Router do
   @doc """
   Add a new handler to the HIVEMonitor system on-the-fly
 
-  Example:
+  ## Example:
 
-      HiveMonitor.Router.add_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
+      iex> HiveMonitor.Router.add_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
+      %{{"explo", "notification", "create"} => [HiveMonitor.NotificationHandler],
+        {"portico", "user", "update"} => [HiveMonitor.GenericHandler]}
+        i
   """
   def add_handler(triplet, handler) do
     GenServer.call(__MODULE__, {:add_handler, triplet, handler})
