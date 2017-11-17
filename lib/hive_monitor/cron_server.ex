@@ -18,7 +18,7 @@ defmodule HiveMonitor.CronServer do
   defmodule Cron do
     @enforce_keys [:name]
     defstruct [
-      :name, :ref,
+      :name, :tref,
       module: System,
       fun: :cmd,
       args: ["/bin/echo", "hello world"],
@@ -201,11 +201,11 @@ defmodule HiveMonitor.CronServer do
   # reference)
   # See http://erlang.org/doc/man/timer.html for details
   defp cancel_timer(cron) do
-    case cron.ref do
+    case cron.tref do
       nil -> {:error, "no timer reference found"}
-      ref -> 
+      {:interval, _ref}-> 
         Logger.info(fn -> "Cancelling timer for #{cron.name}" end)
-        :timer.cancel(ref_to_tref(ref))
+        :timer.cancel(cron.tref)
     end
   end
 
@@ -236,14 +236,6 @@ defmodule HiveMonitor.CronServer do
     cron
   end
 
-  # Erlang timer functions return TRefs. This function will convert the timer
-  # reference into the proper format to be compatible with Erlang's Timer
-  # library.
-  # See http://erlang.org/doc/man/timer.html for details
-  defp ref_to_tref(reference) do
-    {:interval, reference}
-  end
-
   # Search the state for a Cron matching the given name
   defp find_name(state, name) do
     Enum.find(state, :no_match, fn(cron) -> cron.name == name end)
@@ -268,14 +260,14 @@ defmodule HiveMonitor.CronServer do
   # Only activates the timer if there is no current timer reference.
   # See http://erlang.org/doc/man/timer.html for details
   defp set_timer(cron) do
-    case cron.ref do
+    case cron.tref do
       nil -> 
         Logger.info(fn -> 
           "CronServer activating #{cron.name}" <> " every #{cron.rate / 1000}s"
         end )
-        {:ok, {:interval, ref}} = 
+        {:ok, tref} = 
           :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
-        %{cron | ref: ref}
+        %{cron | tref: tref}
       _ -> cron
     end
   end

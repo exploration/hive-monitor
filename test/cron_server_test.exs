@@ -34,7 +34,7 @@ defmodule CronServerTest do
 
     test "cronserver loads the passed config on start",
         %{cron_name: cron_name} do
-      cron = %Cron{name: cron_name, ref: nil}
+      cron = %Cron{name: cron_name, tref: nil}
       cron_map = Map.from_struct(cron)
 
       {:ok, _} = start_supervised({CronServer, [crons: [cron_map]]})
@@ -69,10 +69,11 @@ defmodule CronServerTest do
       {:ok, _} = start_supervised({CronServer, []})
 
       cron = %Cron{name: "timer_reference_test"}
-      assert is_nil(cron.ref)
+      assert is_nil(cron.tref)
 
       updated_cron = CronServer.add_cron(cron)
-      assert is_reference(updated_cron.ref)
+      assert {:interval, ref} = updated_cron.tref
+      assert is_reference(ref)
     end
 
     test "deleting a Cron removes it from the state",
