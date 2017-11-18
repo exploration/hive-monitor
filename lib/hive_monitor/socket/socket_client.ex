@@ -132,6 +132,6 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_call(_msg, _from, _transport, state) do
-    {:ok, state}
+    {:noreply, state}
   end
 end
