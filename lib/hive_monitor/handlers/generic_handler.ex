@@ -19,22 +19,27 @@ defmodule HiveMonitor.GenericHandler do
         "data: #{inspect atom.data}"
     Logger.info(fn -> message end)
 
-    recipients = ["Donald"]
     {:ok, %{status_code: status_code}} = 
-      ExploComm.HipChat.send_notification(notify() <> message, recipients)
+      ExploComm.HipChat.send_notification(
+        notify() <> message, mentions: recipients()
+      )
 
     case(Enum.member?(200..299, status_code)) do
       true -> {:ok, :success}
-      false -> :error
+      _ -> :error
     end
   end
 
-  defp notify do 
+  defp notify() do 
     admins = ["Donald"]
     admins
     |> Enum.map(fn x -> "@#{x}" end)
     |> Enum.join(" ")
     |> Kernel.<>(" ")
+  end
+
+  defp recipients() do
+    Application.get_env(:hive_monitor, :default_chat_recipients) || ["Donald"]
   end
 
 end
