@@ -26,7 +26,7 @@ defmodule HiveMonitor.Handler do
 
   Returns a boolean: `true` for it worked, `false` otherwise.
   """
-  @callback handle_atom(%HiveAtom{}) :: {:ok, atom} | :error
+  @callback handle_atom(%HiveAtom{}) :: {:ok, atom()} | :error
 
   
   @doc """
