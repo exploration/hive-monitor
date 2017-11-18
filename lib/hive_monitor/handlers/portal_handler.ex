@@ -25,8 +25,7 @@ defmodule HiveMonitor.PortalHandler do
         "Content-Type": "application/x-www-form-urlencoded"
     ]
 
-    {:ok, %{status_code: status_code}} = 
-      HTTPoison.post @portal_url, body, headers
+    %{status_code: status_code} = HTTPoison.post! @portal_url, body, headers
 
     case(Enum.member?(200..299, status_code)) do
       true -> {:ok, :success}
