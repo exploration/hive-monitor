@@ -17,7 +17,6 @@ defmodule HiveMonitor.Router do
 
   alias HiveMonitor.GenericHandler
 
-
   @typedoc "Just a unique list of module names."
   @type module_list :: [module()]
 
@@ -28,12 +27,10 @@ defmodule HiveMonitor.Router do
   """
   @type config :: %{HiveAtom.triplet => module_list}
 
-
-
   #----------------#
   # Client Methods #
   #----------------#
-  
+
   @doc """
   Start this Router. Typically called by a Supervisor function.
   """
@@ -94,7 +91,6 @@ defmodule HiveMonitor.Router do
     GenServer.call(__MODULE__, {:remove_handler, triplet, handler})
   end
 
-
   @doc """
   Checks atom triplet against the known map of handlers.  Passes the atom to
   the `handle_atom` method of the relevant handler(s) if the triplet matches.
@@ -115,7 +111,6 @@ defmodule HiveMonitor.Router do
     GenServer.call(__MODULE__, {:route, atom})
   end
 
-
   #----------------#
   # Server Methods #
   #----------------#
@@ -123,7 +118,7 @@ defmodule HiveMonitor.Router do
   @doc false
   def init(args) do
     config = Application.get_env(:hive_monitor, :router_config) || %{}
-    config = 
+    config =
       case Keyword.fetch(args, :config) do
         {:ok, triplets} when is_map(triplets) -> triplets |> Map.merge(config)
         :error -> config
@@ -144,7 +139,7 @@ defmodule HiveMonitor.Router do
 
     {:reply, config, new_state}
   end
-  
+
   @doc false
   def handle_call({:get_config}, _from, known_triplets) do
     config = known_triplets_to_config(known_triplets)
@@ -181,7 +176,6 @@ defmodule HiveMonitor.Router do
     {:noreply, known_triplets}
   end
 
-
   ### PRIVATE ZONE ###
 
   # Converts a `Router.config` type into the internal representation that we
@@ -211,18 +205,18 @@ defmodule HiveMonitor.Router do
   # Attempt to asynchronously route the atom to all known handlers
   # simultaneously. If no known handlers exist, route to the GenericHandler.
   defp routep(atom_map, known_triplets) do
-    atom = HiveAtom.from_map(atom_map) 
+    atom = HiveAtom.from_map(atom_map)
     triplet = HiveAtom.triplet(atom)
 
-    task_list = 
+    task_list =
       case Map.fetch(known_triplets, triplet) do
         {:ok, module_list} ->
           Enum.map(module_list, &log_and_send(&1, atom))
-        :error -> 
+        :error ->
           [Task.async(GenericHandler, :handle_atom, [atom])]
       end
 
     Enum.map(task_list, &Task.await/1)
   end
-  
+
 end

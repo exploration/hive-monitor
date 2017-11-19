@@ -9,7 +9,6 @@ defmodule HiveMonitor.GenericHandler do
   require Logger
 
   alias ExploComm.HipChat
-  
 
   @doc false
   @impl true
@@ -19,11 +18,11 @@ defmodule HiveMonitor.GenericHandler do
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
     message = "Generic Handler got the atom: (#{atom.application}" <>
-        ", #{atom.context}, #{atom.process}) " <>
-        "data: #{inspect atom.data}"
+      ", #{atom.context}, #{atom.process}) " <>
+      "data: #{inspect atom.data}"
     Logger.info(fn -> message end)
 
-    {:ok, %{status_code: status_code}} = 
+    {:ok, %{status_code: status_code}} =
       HipChat.send_notification(
         notify() <> message, mentions: recipients()
       )
@@ -34,7 +33,7 @@ defmodule HiveMonitor.GenericHandler do
     end
   end
 
-  defp notify() do 
+  defp notify() do
     admins = ["Donald"]
     admins
     |> Enum.map(fn x -> "@#{x}" end)
@@ -47,4 +46,3 @@ defmodule HiveMonitor.GenericHandler do
   end
 
 end
-

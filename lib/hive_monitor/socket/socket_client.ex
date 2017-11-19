@@ -72,7 +72,7 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_channel_closed(topic, payload, _transport, state) do
-    Logger.error(fn -> 
+    Logger.error(fn ->
       "disconnected from the topic #{topic}: #{inspect payload}"
     end)
     Process.send_after(self(), {:join, topic}, :timer.seconds(1))
@@ -91,7 +91,7 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_message(topic, event, payload, _transport, state) do
-    Logger.warn(fn -> 
+    Logger.warn(fn ->
       "message on topic #{topic}: #{event} #{inspect payload}"
     end)
     {:ok, state}
@@ -114,7 +114,7 @@ defmodule HiveMonitor.SocketClient do
     Logger.info(fn -> "joining the topic #{topic}" end)
     case GenSocketClient.join(transport, topic) do
       {:error, reason} ->
-        Logger.error(fn -> 
+        Logger.error(fn ->
           "error joining the topic #{topic}: #{inspect reason}"
         end)
         Process.send_after(self(), {:join, topic}, :timer.seconds(1))

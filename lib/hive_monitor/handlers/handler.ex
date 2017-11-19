@@ -12,7 +12,6 @@ defmodule HiveMonitor.Handler do
 
   alias HiveMonitor.Router
 
-
   @doc """
   We need to set the application name that corresponds to each handler. For
   example, `PortalHandler` might have the application name of `portal` - that
@@ -28,7 +27,6 @@ defmodule HiveMonitor.Handler do
   """
   @callback handle_atom(%HiveAtom{}) :: {:ok, atom()} | :error
 
-  
   @doc """
   We often have a need in HIVEMonitor handlers to convert an atom to an encoded
   URL parameter. So we have this function here, accessible to all handlers.
@@ -51,17 +49,17 @@ defmodule HiveMonitor.Handler do
   """
   @spec handle_missed_atoms() :: [any()]
   def handle_missed_atoms() do
-    for {triplet, handler_list} <- Router.get_config(), 
+    for {triplet, handler_list} <- Router.get_config(),
         handler <- handler_list do
       receiving_app = apply(handler, :application_name, [])
       atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
 
-      Logger.info(fn -> 
+      Logger.info(fn ->
         "handling #{Enum.count(atom_list)} missed atoms from " <>
         "#{inspect triplet} for #{receiving_app}"
       end)
 
-      Enum.each(atom_list, fn atom -> 
+      Enum.each(atom_list, fn atom ->
         atom |> Map.from_struct |> Router.route
       end)
     end

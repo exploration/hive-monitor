@@ -1,5 +1,5 @@
 defmodule HiveMonitor.PorticoHandler do
-  
+
   @moduledoc """
   Forward an atom along to Portico's "incoming atom" endpoint.
   """
@@ -10,7 +10,6 @@ defmodule HiveMonitor.PorticoHandler do
 
   @script_name "pub - receive new atom from HIVE (atom_json)"
   @server_url "fmp://minerva.explo.org/hive_data"
-  
 
   @doc false
   @impl true

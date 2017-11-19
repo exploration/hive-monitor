@@ -1,5 +1,5 @@
 defmodule HiveMonitor.PortalHandler do
-  
+
   @moduledoc """
   Forward an atom to the Portal's incoming_atom endpoint.
   """

@@ -10,7 +10,7 @@ defmodule HiveMonitor do
   # for more information on OTP Applications
   def start(_type, _args) do
     Logger.info(fn -> "Starting HIVE Monitoring" end)
-    HiveMonitor.Supervisor.start_link()    
+    HiveMonitor.Supervisor.start_link()
   end
 
   @doc """

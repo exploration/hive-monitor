@@ -22,4 +22,3 @@ defmodule HiveMonitor.HiveSupervisor do
     ], strategy: :one_for_one)
   end
 end
-
