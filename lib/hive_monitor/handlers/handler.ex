@@ -46,27 +46,24 @@ defmodule HiveMonitor.Handler do
   came across the wire. The job of this function is to grab the current list of
   triplets we should be handling, query HIVE for any atoms unseen by the
   handler application name, and handle them.
+
+  Returns a list of the return statuses of each atom routing attempt.
   """
-  @spec handle_missed_atoms() :: :ok
+  @spec handle_missed_atoms() :: [any()]
   def handle_missed_atoms() do
-    known_triplets = Router.get_config()
+    for {triplet, handler_list} <- Router.get_config(), 
+        handler <- handler_list do
+      receiving_app = apply(handler, :application_name, [])
+      atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
 
-    Enum.each(known_triplets, fn known_triplet ->
-      {triplet, handler_list} = known_triplet
-
-      Enum.each(handler_list, fn handler ->
-        receiving_app = apply(handler, :application_name, [])
-        atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
-
-        Logger.info(fn -> 
-          "handling #{Enum.count(atom_list)} missed atoms from " <>
-          "#{inspect triplet} for #{receiving_app}"
-        end)
-
-        Enum.each(atom_list, fn atom -> 
-          atom |> Map.from_struct |> Router.route
-        end)
+      Logger.info(fn -> 
+        "handling #{Enum.count(atom_list)} missed atoms from " <>
+        "#{inspect triplet} for #{receiving_app}"
       end)
-    end)
+
+      Enum.each(atom_list, fn atom -> 
+        atom |> Map.from_struct |> Router.route
+      end)
+    end
   end
 end
