@@ -1,5 +1,9 @@
 defmodule HiveMonitor do
+
+  @moduledoc false
+
   use Application
+
   require Logger
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html

@@ -29,9 +29,9 @@ defmodule HiveMonitor.CronServer do
   } ]
 
   defmodule Cron do
+    @moduledoc false
 
     @enforce_keys [:name]
-
     defstruct [
       :name, :tref,
       module: System,
