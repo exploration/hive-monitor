@@ -132,18 +132,15 @@ defmodule HiveMonitor.NotificationHandler do
   defp run_if_not_empty(data, key_function_tuples) do
     Enum.map(key_function_tuples, fn {key, function} ->
       key = Atom.to_string(key)
-      case Map.fetch(data, key) do
-        {:ok, recipients} ->
-          case is_list(recipients) do
-            true ->
-              recipients = strip_empty_strings(recipients)
-              case Enum.count(recipients) > 0 do
-                true -> apply(__MODULE__, function, [data])
-                false -> {:error, :empty_recipients}
-              end
-            false -> {:error, :invalid_recipients}
-          end
-        :error -> {:error, :empty_recipients}
+
+      with {:ok, recipients} <- Map.fetch(data, key),
+          true <- is_list(recipients),
+          recipients <- strip_empty_strings(recipients),
+          true <- (Enum.count(recipients) > 0) do 
+        apply(__MODULE__, function, [data])
+      else
+        false -> {:error, :empty_recipients}
+        _ -> {:error, :invalid_recipients}
       end
     end)
   end
