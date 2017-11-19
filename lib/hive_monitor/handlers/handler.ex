@@ -33,6 +33,7 @@ defmodule HiveMonitor.Handler do
   We often have a need in HIVEMonitor handlers to convert an atom to an encoded
   URL parameter. So we have this function here, accessible to all handlers.
   """
+  @spec atom_to_uri_query(HiveAtom.t()) :: String.t()
   def atom_to_uri_query(atom = %HiveAtom{}) do
     atom
     |> Map.from_struct
@@ -46,7 +47,8 @@ defmodule HiveMonitor.Handler do
   triplets we should be handling, query HIVE for any atoms unseen by the
   handler application name, and handle them.
   """
-  def handle_missed_atoms do
+  @spec handle_missed_atoms() :: :ok
+  def handle_missed_atoms() do
     known_triplets = Router.get_config()
 
     Enum.each(known_triplets, fn known_triplet ->

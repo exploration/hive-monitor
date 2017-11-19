@@ -17,6 +17,13 @@ defmodule HiveMonitor.Router do
 
   alias HiveMonitor.GenericHandler
 
+  @typedoc """
+    A `config` in the context of a `HiveMonitor.Router` is a HIVE triplet, mapped
+    to a list of modules that implement the `Handler` behavior, which can
+    receive a HIVE atom when one is routed in. 
+  """
+  @type config :: %{{String.t(), String.t(), String.t()} => [module()]}
+
 
   #----------------#
   # Client Methods #
@@ -25,6 +32,7 @@ defmodule HiveMonitor.Router do
   @doc """
   Start this Router. Typically called by a Supervisor function.
   """
+  @spec start_link(keyword()) :: GenServer.on_start()
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
@@ -39,6 +47,7 @@ defmodule HiveMonitor.Router do
         {"portico", "user", "update"} => [HiveMonitor.GenericHandler]}
         i
   """
+  @spec add_handler(HiveAtom.triplet(), module()) :: config()
   def add_handler(triplet, handler) do
     GenServer.call(__MODULE__, {:add_handler, triplet, handler})
   end
@@ -52,6 +61,7 @@ defmodule HiveMonitor.Router do
   configuration changes on-the-fly but want to store them in the configuration
   file for when you eventually restart.
   """
+  @spec get_config() :: config()
   def get_config() do
     GenServer.call(__MODULE__, {:known_triplets})
   end
@@ -59,10 +69,13 @@ defmodule HiveMonitor.Router do
   @doc """
   Stop handling the given triplet with the given handler.
 
-  Example:
+  ## Example:
 
-      HiveMonitor.Router.remove_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
+      iex> HiveMonitor.Router.remove_handler( \
+          {"portico","user","update"}, HiveMonitor.GenericHandler)
+      %{{"portico","user","update"} => []}
   """
+  @spec remove_handler(HiveAtom.triplet(), module()) :: config()
   def remove_handler(triplet, handler) do
     GenServer.call(__MODULE__, {:remove_handler, triplet, handler})
   end
@@ -75,13 +88,16 @@ defmodule HiveMonitor.Router do
 
   This path is usually triggered automatically from the SocketClient.
   """
+  @spec route(map()) :: :ok
   def route(atom) when is_map(atom) do
     GenServer.cast(__MODULE__, {:route, atom})
   end
+
   @doc """
   This is a synchronous version of route, which is handy for testing because it
   returns the results of each handle_atom() method called by a Handler.
   """
+  @spec route(map(), :await) :: {:ok, :success} | :error
   def route(atom, :await) when is_map(atom) do
     GenServer.call(__MODULE__, {:route, atom})
   end
@@ -91,9 +107,7 @@ defmodule HiveMonitor.Router do
   # Server Methods #
   #----------------#
 
-  @doc """
-  The state that this server contains is "known triplets" from HIVE
-  """
+  @doc ~S(The state that this server contains is "known triplets" from HIVE.)
   def init(args) do
     config = Application.get_env(:hive_monitor, :known_triplets) || %{}
     known_triplets = 
@@ -173,6 +187,7 @@ defmodule HiveMonitor.Router do
           [Task.async(GenericHandler, :handle_atom, [atom])]
         _ ->
           Logger.error(fn -> "Can't route, module list format error" end)
+          []
       end
 
     Enum.map(task_list, fn pid -> Task.await(pid) end)
