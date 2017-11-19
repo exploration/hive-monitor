@@ -7,8 +7,8 @@ defmodule HiveMonitor.Router do
   triplets.
 
   The state can be configured on-the-fly through the `add_handler`,
-  `remove_handler`, and `known_triplets` calls, or it can be set in the
-  `:hive_monitor, :known_triplets` configuration variable.
+  `remove_handler`, and `get_config` calls, or it can be set in the
+  `:hive_monitor, :router_config` configuration variable.
   """
 
   use GenServer
@@ -17,12 +17,17 @@ defmodule HiveMonitor.Router do
 
   alias HiveMonitor.GenericHandler
 
+
+  @typedoc "Just a unique list of module names."
+  @type module_list :: [module()]
+
   @typedoc """
-    A `config` in the context of a `HiveMonitor.Router` is a HIVE triplet, mapped
-    to a list of modules that implement the `Handler` behavior, which can
-    receive a HIVE atom when one is routed in. 
+  A `config` in the context of a `HiveMonitor.Router` is a HIVE triplet, mapped
+  to a list of modules that implement the `Handler` behavior, which can
+  receive a HIVE atom when one is routed in. 
   """
-  @type config :: %{{String.t(), String.t(), String.t()} => [module()]}
+  @type config :: %{HiveAtom.triplet => module_list}
+
 
 
   #----------------#
@@ -38,7 +43,9 @@ defmodule HiveMonitor.Router do
   end
 
   @doc """
-  Add a new handler to the HIVEMonitor system on-the-fly
+  Add a new handler to the HIVEMonitor system on-the-fly.
+
+  Returns the current `Router` config.
 
   ## Example:
 
@@ -54,26 +61,33 @@ defmodule HiveMonitor.Router do
 
   @doc """
   Returns all known triplets, along with the list of any handlers associated
-  with each triplet, as a map.
+  with each triplet, as a `Router.config()` type.
 
   The output of this function can be copy/pasted into the config variable
-  `:hive_monitor, :known_triplets`, which is handy for when you've made
+  `:hive_monitor, :router_config`, which is handy for when you've made
   configuration changes on-the-fly but want to store them in the configuration
   file for when you eventually restart.
   """
   @spec get_config() :: config()
   def get_config() do
-    GenServer.call(__MODULE__, {:known_triplets})
+    GenServer.call(__MODULE__, {:get_config})
   end
 
   @doc """
-  Stop handling the given triplet with the given handler.
+  Stop handling the given triplet with the given handler. If the given triplet
+  no longer has any handlers associated with it, the triplet will be removed
+  entirely fro the config.
+
+  Returns the current `Router` config.
 
   ## Example:
 
       iex> HiveMonitor.Router.remove_handler( \
           {"portico","user","update"}, HiveMonitor.GenericHandler)
-      %{{"portico","user","update"} => []}
+      %{{"portico","user","update"} => [SomeOtherHandler]}
+      iex> HiveMonitor.Router.remove_handler( \
+          {"portico","user","update"}, SomeOtherHandler)
+      %{}
   """
   @spec remove_handler(HiveAtom.triplet(), module()) :: config()
   def remove_handler(triplet, handler) do
@@ -82,9 +96,8 @@ defmodule HiveMonitor.Router do
 
 
   @doc """
-  Checks atom triplet against a known map of handlers (`@known_triplets`).
-  Passes the atom to the `handle_atom` method of the relevant handler(s) if the
-  triplet matches.
+  Checks atom triplet against the known map of handlers.  Passes the atom to
+  the `handle_atom` method of the relevant handler(s) if the triplet matches.
 
   This path is usually triggered automatically from the SocketClient.
   """
@@ -107,90 +120,109 @@ defmodule HiveMonitor.Router do
   # Server Methods #
   #----------------#
 
-  @doc ~S(The state that this server contains is "known triplets" from HIVE.)
+  @doc false
   def init(args) do
-    config = Application.get_env(:hive_monitor, :known_triplets) || %{}
-    known_triplets = 
-      case Keyword.fetch(args, :known_triplets) do
+    config = Application.get_env(:hive_monitor, :router_config) || %{}
+    config = 
+      case Keyword.fetch(args, :config) do
         {:ok, triplets} when is_map(triplets) -> triplets |> Map.merge(config)
         :error -> config
       end
+
+    known_triplets = config_to_known_triplets(config)
 
     {:ok, known_triplets}
   end
 
   @doc false
   def handle_call({:add_handler, triplet, handler}, _from, known_triplets) do
-    new_state = 
-      Map.update(known_triplets, triplet, [handler], fn handler_list ->
-        case Enum.find(handler_list, fn v -> v == handler end) do
-          nil -> [handler | handler_list]
-          _ -> handler_list
-        end
-      end)
+    new_state = Map.update(
+      known_triplets, triplet, MapSet.new([handler]), &MapSet.put(&1, handler)
+    )
 
-    {:reply, new_state, new_state}
+    config = known_triplets_to_config(new_state)
+
+    {:reply, config, new_state}
   end
   
   @doc false
-  def handle_call({:known_triplets}, _from, known_triplets) do
-    {:reply, known_triplets, known_triplets}
+  def handle_call({:get_config}, _from, known_triplets) do
+    config = known_triplets_to_config(known_triplets)
+    {:reply, config, known_triplets}
   end
 
   @doc false
   def handle_call({:remove_handler, triplet, handler}, _from, known_triplets) do
-    new_state = 
-      Map.update(known_triplets, triplet, [], fn handler_list ->
-        List.delete(handler_list, handler)
-      end)
+    minus_handler = Map.update(
+      known_triplets, triplet, MapSet.new(), &MapSet.delete(&1, handler)
+    )
 
-    new_state = 
-      case Map.fetch(new_state, triplet) do
-        {:ok, []} -> Map.delete(new_state, triplet)
-        _ -> new_state
+    empty_set = MapSet.new
+    new_state =
+      case Map.fetch(minus_handler, triplet) do
+        {:ok, ^empty_set} -> Map.delete(minus_handler, triplet)
+        _ -> minus_handler
       end
 
-    {:reply, new_state, new_state}
+    config = known_triplets_to_config(new_state)
+
+    {:reply, config, new_state}
   end
 
   @doc false
   def handle_call({:route, atom_map}, _from, known_triplets) do
-    result = do_routing(atom_map, known_triplets)
+    result = routep(atom_map, known_triplets)
     {:reply, result, known_triplets}
   end
 
   @doc false
   def handle_cast({:route, atom_map}, known_triplets) do
-    do_routing(atom_map, known_triplets)
+    routep(atom_map, known_triplets)
     {:noreply, known_triplets}
   end
 
 
+  ### PRIVATE ZONE ###
+
+  # Converts a `Router.config` type into the internal representation that we
+  # use in our Router state.
+  defp config_to_known_triplets(config) do
+    Map.new(config, fn {triplet, module_list} ->
+      {triplet, MapSet.new(module_list)}
+    end)
+  end
+
+  # Convert from internal Router state to a `Router.config` type.
+  defp known_triplets_to_config(known_triplets) do
+    Map.new(known_triplets, fn {triplet, module_set} ->
+      {triplet, MapSet.to_list(module_set)}
+    end)
+  end
+
+  defp log_and_send(module, atom) do
+    Logger.info(fn ->
+      "ATOM received (#{atom.application}" <>
+      ",#{atom.context},#{atom.process})" <>
+      ", routing to #{to_string module}"
+    end)
+    Task.async(module, :handle_atom, [atom])
+  end
+
   # Attempt to asynchronously route the atom to all known handlers
   # simultaneously. If no known handlers exist, route to the GenericHandler.
-  defp do_routing(atom_map, known_triplets) do
+  defp routep(atom_map, known_triplets) do
     atom = HiveAtom.from_map(atom_map) 
     triplet = HiveAtom.triplet(atom)
 
     task_list = 
       case Map.fetch(known_triplets, triplet) do
-        {:ok, module_list} when is_list(module_list) ->
-          Enum.map(module_list, fn module ->
-            Logger.info(fn ->
-              "ATOM received (#{atom.application}" <>
-              ",#{atom.context},#{atom.process})" <>
-              ", routing to #{to_string module}"
-            end)
-            Task.async(module, :handle_atom, [atom])
-          end)
+        {:ok, module_list} ->
+          Enum.map(module_list, &log_and_send(&1, atom))
         :error -> 
           [Task.async(GenericHandler, :handle_atom, [atom])]
-        _ ->
-          Logger.error(fn -> "Can't route, module list format error" end)
-          []
       end
 
-    Enum.map(task_list, fn pid -> Task.await(pid) end)
+    Enum.map(task_list, &Task.await/1)
   end
   
 end
