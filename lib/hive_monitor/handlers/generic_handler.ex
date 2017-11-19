@@ -5,7 +5,11 @@ defmodule HiveMonitor.GenericHandler do
   """
 
   @behaviour HiveMonitor.Handler
+
   require Logger
+
+  alias ExploComm.HipChat
+  
 
   @doc false
   @impl true
@@ -20,7 +24,7 @@ defmodule HiveMonitor.GenericHandler do
     Logger.info(fn -> message end)
 
     {:ok, %{status_code: status_code}} = 
-      ExploComm.HipChat.send_notification(
+      HipChat.send_notification(
         notify() <> message, mentions: recipients()
       )
 
