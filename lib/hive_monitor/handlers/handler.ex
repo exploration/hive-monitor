@@ -34,7 +34,7 @@ defmodule HiveMonitor.Handler do
   URL parameter. So we have this function here, accessible to all handlers.
   """
   @spec atom_to_uri_query(HiveAtom.t()) :: String.t()
-  def atom_to_uri_query(atom = %HiveAtom{}) do
+  def atom_to_uri_query(%HiveAtom{} = atom) do
     atom
     |> Map.from_struct
     |> Poison.encode!

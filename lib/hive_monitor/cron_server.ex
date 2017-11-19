@@ -20,13 +20,13 @@ defmodule HiveMonitor.CronServer do
   A "config" is basically a list of %Cron{}s, but since we don't have the Cron
   type at compile time, we have to pass it in as a map.
   """
-  @type config :: [ %{
+  @type config :: [%{
     name: String.t(),
     module: module(),
     fun: function(),
     args: [String.t()],
     rate: integer()
-  } ]
+  }]
 
   defmodule Cron do
     @moduledoc false
@@ -137,7 +137,7 @@ defmodule HiveMonitor.CronServer do
   @doc """
   Given a %Cron{}, run its Module/Function/Args.
   """
-  def execute_cron(cron = %Cron{}) do
+  def execute_cron(%Cron{} = cron) do
     Logger.info("CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
         "#{inspect cron.module} #{inspect cron.fun} #{inspect cron.args}")
     apply(cron.module, cron.fun, cron.args)
@@ -173,7 +173,7 @@ defmodule HiveMonitor.CronServer do
     case find_name(state, cron.name) do
       :no_match ->
         updated_cron = set_timer(cron)
-        new_state = [ updated_cron | state ]
+        new_state = [updated_cron | state]
         {:reply, updated_cron, new_state}
       _ -> {:reply, {:error, "duplicate key"}, state}
     end
@@ -244,7 +244,7 @@ defmodule HiveMonitor.CronServer do
   defp cancel_timer(cron) do
     case cron.tref do
       nil -> {:error, "no timer reference found"}
-      {:interval, _ref}-> 
+      {:interval, _ref} -> 
         Logger.info(fn -> "Cancelling timer for #{cron.name}" end)
         :timer.cancel(cron.tref)
     end
@@ -269,7 +269,7 @@ defmodule HiveMonitor.CronServer do
 
     Logger.info(fn -> 
       "Starting #{inspect cron.name}'s timer in " <>
-      "#{inspect(start_time / 1000 |> Float.round())} seconds."
+      "#{inspect(Float.round(start_time / 1000))} seconds."
     end)
 
     Process.send_after(__MODULE__, {:set_timer, cron}, start_time)
@@ -305,7 +305,7 @@ defmodule HiveMonitor.CronServer do
       nil -> 
         Logger.info(fn -> 
           "CronServer activating #{cron.name}" <> " every #{cron.rate / 1000}s"
-        end )
+        end)
         {:ok, tref} = 
           :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
         %{cron | tref: tref}
