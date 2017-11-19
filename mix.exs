@@ -4,7 +4,7 @@ defmodule HiveMonitor.Mixfile do
   def project do
     [
       app: :hive_monitor,
-      version: "0.4.3",
+      version: "0.5.0",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env),
       compilers: Mix.compilers,

@@ -32,7 +32,7 @@ system:
 
     config :hive_monitor,
       application_name: "can_be_customized",
-      known_triplets: "output of HiveMonitor.Router.get_config()"
+      router_config: "output of HiveMonitor.Router.get_config()"
       crons: "output of HiveMonitor.CronServer.get_config()",
       # The amount of time within which your initial batch of Crons will get
       # randomly started:

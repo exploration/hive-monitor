@@ -36,7 +36,7 @@ config :hive_monitor, crons: [
 # handle realtime inputs between Explo's various web systems (Portico, Portal,
 # etc.). If you're using the HIVE monitor in other environments, you'll want to
 # configure your handlers here.
-config :hive_monitor, known_triplets: %{
+config :hive_monitor, router_config: %{
   {"explo", "notification", "create"} => [HiveMonitor.NotificationHandler]
 }
 
