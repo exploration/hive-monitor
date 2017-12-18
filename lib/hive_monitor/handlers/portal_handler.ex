@@ -17,7 +17,7 @@ defmodule HiveMonitor.PortalHandler do
   @doc false
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
-    atom_encoded = Handler.atom_to_uri_query(atom)
+    atom_encoded = Handler.atom_to_uri_form(atom)
 
     body = "atom=#{atom_encoded}&portal_token=#{@portal_token}"
     headers = [
