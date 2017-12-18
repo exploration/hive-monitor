@@ -29,14 +29,29 @@ defmodule HiveMonitor.Handler do
 
   @doc """
   We often have a need in HIVEMonitor handlers to convert an atom to an encoded
-  URL parameter. So we have this function here, accessible to all handlers.
+  URL form. So we have this function here, accessible to all handlers.
+  """
+  @spec atom_to_uri_form(HiveAtom.t()) :: String.t()
+  def atom_to_uri_form(%HiveAtom{} = atom) do
+    atom
+    |> atom_to_json
+    |> URI.encode_www_form
+  end
+
+  @doc """
+  Same as `atom_to_uri_form` except converts the atom to a URI query...
   """
   @spec atom_to_uri_query(HiveAtom.t()) :: String.t()
   def atom_to_uri_query(%HiveAtom{} = atom) do
     atom
+    |> atom_to_json
+    |> URI.encode
+  end
+
+  defp atom_to_json(%HiveAtom{} = atom) do
+    atom
     |> Map.from_struct
     |> Poison.encode!
-    |> URI.encode_www_form
   end
 
   @doc """
