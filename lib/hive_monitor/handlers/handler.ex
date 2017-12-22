@@ -38,16 +38,6 @@ defmodule HiveMonitor.Handler do
     |> URI.encode_www_form
   end
 
-  @doc """
-  Same as `atom_to_uri_form` except converts the atom to a URI query...
-  """
-  @spec atom_to_uri_query(HiveAtom.t()) :: String.t()
-  def atom_to_uri_query(%HiveAtom{} = atom) do
-    atom
-    |> atom_to_json
-    |> URI.encode
-  end
-
   defp atom_to_json(%HiveAtom{} = atom) do
     atom
     |> Map.from_struct
