@@ -23,9 +23,17 @@ defmodule HiveMonitor.PorticoHandler do
   def handle_atom(%HiveAtom{} = atom) do
     url = "#{@server_url}" <>
       "?script=#{URI.encode(@script_name)}" <>
-      "&param=#{Handler.atom_to_uri_query(atom)}"
+      "&param=#{atom_to_fm_query(atom)}"
     System.cmd "/usr/bin/open", [url]
 
     {:ok, :fine}
+  end
+
+  # FileMaker can't handle "+"es in passed queries, but otherwise handles them
+  # like form data...
+  defp atom_to_fm_query(%HiveAtom{} = atom) do
+    atom
+    |> Handler.atom_to_uri_form
+    |> String.replace("+", "%20")
   end
 end
