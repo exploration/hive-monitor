@@ -1,5 +1,4 @@
 defmodule HiveMonitor do
-
   @moduledoc false
 
   use Application
@@ -18,7 +17,6 @@ defmodule HiveMonitor do
   search, etc.
   """
   def application_name do
-    Application.get_env(:hive_monitor, :application_name) ||
-        "hive_monitor"
+    Application.get_env(:hive_monitor, :application_name) || "hive_monitor"
   end
 end

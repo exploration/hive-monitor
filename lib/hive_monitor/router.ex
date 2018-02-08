@@ -216,7 +216,7 @@ defmodule HiveMonitor.Router do
           [Task.async(GenericHandler, :handle_atom, [atom])]
       end
 
-    Enum.map(task_list, &Task.await/1)
+    Enum.map(task_list, fn t -> Task.await(t, 15000) end)
   end
 
 end
