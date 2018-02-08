@@ -195,7 +195,7 @@ defmodule HiveMonitor.Router do
 
   defp log_and_send(module, atom) do
     Logger.info(fn ->
-      "ATOM received (#{atom.application}" <>
+      "ATOM #{atom.id} received (#{atom.application}" <>
       ",#{atom.context},#{atom.process})" <>
       ", routing to #{to_string module}"
     end)
