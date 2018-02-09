@@ -18,7 +18,9 @@ defmodule HiveMonitor.HiveSupervisor do
       HiveMonitor.Router,
       # The CronServer handles any system tasks that we want to run on a
       # periodic schedule.
-      HiveMonitor.CronServer
+      HiveMonitor.CronServer,
+      # The PorticoBuffer is an EXPLO-specific GenServer that handles sending atoms to our Portico system at a rate it can handle.
+      HiveMonitor.PorticoBuffer
     ], strategy: :one_for_one)
   end
 end
