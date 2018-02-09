@@ -8,8 +8,11 @@ defmodule HiveMonitor.SocketSupervisor do
   end
 
   def init(:ok) do
-    Supervisor.init([
-      HiveMonitor.SocketClient
-    ], strategy: :one_for_one)
+    Supervisor.init(
+      [
+        HiveMonitor.SocketClient
+      ],
+      strategy: :one_for_one
+    )
   end
 end

@@ -11,18 +11,19 @@ defmodule RouterTest do
       "process" => "test_process",
       "data" => ~s({"hello":"world"})
     }
+
     triplet = {
-      atom_map["application"], atom_map["context"], atom_map["process"]
+      atom_map["application"],
+      atom_map["context"],
+      atom_map["process"]
     }
+
     handler = HiveMonitor.TestHandler
     alt_handler = HiveMonitor.GenericHandler
 
     {
       :ok,
-      triplet: triplet,
-      handler: handler,
-      alt_handler: alt_handler,
-      atom_map: atom_map
+      triplet: triplet, handler: handler, alt_handler: alt_handler, atom_map: atom_map
     }
   end
 
@@ -35,26 +36,24 @@ defmodule RouterTest do
       assert Enum.empty?(config)
     end
 
-    test "loads the initial config via passed params",
-        %{triplet: triplet, handler: handler} do
-      {:ok, _} = start_supervised(
-        {Router, [config: %{triplet => [handler]}]}
-      )
+    test "loads the initial config via passed params", %{triplet: triplet, handler: handler} do
+      {:ok, _} = start_supervised({Router, [config: %{triplet => [handler]}]})
 
       config = Router.get_config()
 
       assert Enum.count(config) == 1
       assert Map.fetch!(config, triplet) == [handler]
-
     end
 
-    test "A config is returned by add_handler and remove_handler", 
-        %{triplet: triplet, handler: handler} do
+    test "A config is returned by add_handler and remove_handler", %{
+      triplet: triplet,
+      handler: handler
+    } do
       {:ok, _} = start_supervised({Router, [config: %{}]})
 
       added_triplets = Router.add_handler(triplet, handler)
       config = Router.get_config()
-      refute Enum.empty? config
+      refute Enum.empty?(config)
       assert added_triplets == config
 
       removed_triplets = Router.remove_handler(triplet, handler)
@@ -63,17 +62,21 @@ defmodule RouterTest do
       assert %{} == config
     end
 
-    test "Adding a handler modifies the config with a new entry",
-        %{handler: handler, triplet: triplet} do
+    test "Adding a handler modifies the config with a new entry", %{
+      handler: handler,
+      triplet: triplet
+    } do
       {:ok, _} = start_supervised({Router, [config: %{}]})
 
       added_triplets = Router.add_handler(triplet, handler)
 
       assert {:ok, [handler]} == Map.fetch(added_triplets, triplet)
     end
-    
-    test "Removing a unique handler removes the triplet from the config",
-        %{handler: handler, triplet: triplet} do
+
+    test "Removing a unique handler removes the triplet from the config", %{
+      handler: handler,
+      triplet: triplet
+    } do
       {:ok, _} = start_supervised({Router, [config: %{}]})
 
       Router.add_handler(triplet, handler)
@@ -81,9 +84,12 @@ defmodule RouterTest do
 
       assert :error == Map.fetch(config, triplet)
     end
-    
-    test "Removing a non-unique handler keeps previous triplet entries",
-        %{triplet: triplet, handler: handler, alt_handler: alt_handler} do
+
+    test "Removing a non-unique handler keeps previous triplet entries", %{
+      triplet: triplet,
+      handler: handler,
+      alt_handler: alt_handler
+    } do
       {:ok, _} = start_supervised({Router, [config: %{}]})
 
       Router.add_handler(triplet, handler)
@@ -95,24 +101,29 @@ defmodule RouterTest do
   end
 
   describe "routing: " do
-    test "routing to an atom returns a list of routing statuses",
-        %{atom_map: atom_map, triplet: triplet, handler: handler} do
+    test "routing to an atom returns a list of routing statuses", %{
+      atom_map: atom_map,
+      triplet: triplet,
+      handler: handler
+    } do
       {:ok, _} = start_supervised({Router, [config: %{}]})
       Router.add_handler(triplet, handler)
 
       assert [{:ok, :success}] = Router.route(atom_map, :await)
     end
 
-    test "routing to an atom ends up at a handler",
-        %{atom_map: atom_map, triplet: triplet, handler: handler} do
+    test "routing to an atom ends up at a handler", %{
+      atom_map: atom_map,
+      triplet: triplet,
+      handler: handler
+    } do
       {:ok, _} = start_supervised({Router, [config: %{}]})
       Router.add_handler(triplet, handler)
 
       atom = HiveAtom.from_map(atom_map)
-      capture = capture_log(fn -> Router.route(atom_map, :await) end) 
+      capture = capture_log(fn -> Router.route(atom_map, :await) end)
 
-      assert capture =~ "Test Handler: #{inspect atom}"
+      assert capture =~ "Test Handler: #{inspect(atom)}"
     end
   end
-
 end

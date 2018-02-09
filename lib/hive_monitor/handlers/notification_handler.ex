@@ -1,5 +1,4 @@
 defmodule HiveMonitor.NotificationHandler do
-
   @moduledoc """
   This module is designed to retrieve generic notifications that come from
   any system. It expects atom.data in the format:
@@ -34,13 +33,16 @@ defmodule HiveMonitor.NotificationHandler do
   def handle_atom(%HiveAtom{} = atom) do
     case Poison.decode(atom.data) do
       {:ok, data} ->
-        status_list = run_if_not_empty(
-          data,
-          "chat_handles": :send_chat_notifications,
-          "sms_numbers": :send_sms_notifications,
-          "emails": :send_email_notifications
-        )
+        status_list =
+          run_if_not_empty(
+            data,
+            chat_handles: :send_chat_notifications,
+            sms_numbers: :send_sms_notifications,
+            emails: :send_email_notifications
+          )
+
         put_receipt(atom, status_list)
+
       {:error, reason} ->
         Logger.error(fn -> "Notification JSON error: #{inspect(reason)}" end)
         :error
@@ -50,16 +52,21 @@ defmodule HiveMonitor.NotificationHandler do
   @doc false
   def send_chat_notifications(data) do
     message = data["message"]
-    {:ok, response} = HipChat.send_notification(
-      message,
-      from: data["from"],
-      mentions: data["chat_handles"],
-      room: data["room"]
-    )
+
+    {:ok, response} =
+      HipChat.send_notification(
+        message,
+        from: data["from"],
+        mentions: data["chat_handles"],
+        room: data["room"]
+      )
+
     status = parse_status_code(response.status_code)
+
     if status == {:ok, :sent} do
       Logger.info(fn -> "chat notification(s) sent" end)
     end
+
     status
   end
 
@@ -67,13 +74,21 @@ defmodule HiveMonitor.NotificationHandler do
   def send_email_notifications(data) do
     message = data["message"]
     email_list = data["emails"]
-    {:ok, response} = Mandrill.send_email(
-      message, email_list, from: data["from"], subject: data["subject"]
-    )
+
+    {:ok, response} =
+      Mandrill.send_email(
+        message,
+        email_list,
+        from: data["from"],
+        subject: data["subject"]
+      )
+
     status = parse_status_code(response.status_code)
+
     if status == {:ok, :sent} do
       Logger.info(fn -> "email notification(s) sent" end)
     end
+
     status
   end
 
@@ -81,16 +96,20 @@ defmodule HiveMonitor.NotificationHandler do
   def send_sms_notifications(data) do
     message = data["message"]
     number_list = data["sms_numbers"]
+
     status_list =
       Enum.map(number_list, fn number ->
         {:ok, response} = Twilio.send_sms(message, number)
         parse_status_code(response.status_code)
       end)
+
     case Enum.any?(status_list, &({:ok, :sent} == &1)) do
       true ->
         Logger.info(fn -> "sms notification(s) sent" end)
         {:ok, :sent}
-      false -> {:error, :send_sms}
+
+      false ->
+        {:error, :send_sms}
     end
   end
 
@@ -107,17 +126,16 @@ defmodule HiveMonitor.NotificationHandler do
 
   defp put_receipt(atom, status_list) do
     with notifications_went_through? <-
-          Enum.any?(status_list, fn {status, _} -> status == :ok end),
-        no_valid_statuses? <- Enum.all?(status_list,
-          fn stat -> stat == {:error, :empty_recipients} end
-        ),
-        put_receipt? <- is_integer(atom.id) &&
-          (no_valid_statuses? || notifications_went_through?) do
-
+           Enum.any?(status_list, fn {status, _} -> status == :ok end),
+         no_valid_statuses? <-
+           Enum.all?(status_list, fn stat -> stat == {:error, :empty_recipients} end),
+         put_receipt? <-
+           is_integer(atom.id) && (no_valid_statuses? || notifications_went_through?) do
       case put_receipt? do
         true ->
           HiveService.put_receipt(atom.id, HiveMonitor.application_name())
           {:ok, :success}
+
         false ->
           :error
       end
@@ -133,9 +151,9 @@ defmodule HiveMonitor.NotificationHandler do
       key = Atom.to_string(key)
 
       with {:ok, recipients} <- Map.fetch(data, key),
-          true <- is_list(recipients),
-          recipients <- strip_empty_strings(recipients),
-          true <- (Enum.count(recipients) > 0) do
+           true <- is_list(recipients),
+           recipients <- strip_empty_strings(recipients),
+           true <- Enum.count(recipients) > 0 do
         apply(__MODULE__, function, [data])
       else
         false -> {:error, :empty_recipients}
@@ -143,5 +161,4 @@ defmodule HiveMonitor.NotificationHandler do
       end
     end)
   end
-
 end

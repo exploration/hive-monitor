@@ -7,10 +7,10 @@ defmodule PorticoBufferTest do
     test "Retrieving state" do
       {:ok, _} = start_supervised({PorticoBuffer, []})
 
-      state = PorticoBuffer.get_config
+      state = PorticoBuffer.get_config()
       assert state.__struct__ == State
-      assert Map.has_key? state, :atoms
-      assert Map.has_key? state, :rate
+      assert Map.has_key?(state, :atoms)
+      assert Map.has_key?(state, :rate)
     end
 
     test "Updating buffer rate" do
@@ -18,7 +18,7 @@ defmodule PorticoBufferTest do
 
       new_rate = :timer.hours(24)
       new_state = PorticoBuffer.update_rate(new_rate)
-      
+
       assert new_state.rate == new_rate
     end
 
@@ -27,7 +27,7 @@ defmodule PorticoBufferTest do
 
       atom = %HiveAtom{}
       new_state = PorticoBuffer.add_atom(atom)
-      
+
       assert length(new_state.atoms) == 1
     end
   end

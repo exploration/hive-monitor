@@ -1,5 +1,4 @@
 defmodule HiveMonitor.TestHandler do
-
   @moduledoc """
   Utility handler used during testing.
   """
@@ -16,10 +15,9 @@ defmodule HiveMonitor.TestHandler do
   """
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
-    message = "Test Handler: #{inspect atom}"
+    message = "Test Handler: #{inspect(atom)}"
     Logger.debug(fn -> message end)
 
     {:ok, :success}
   end
-
 end

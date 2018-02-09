@@ -1,12 +1,11 @@
 defmodule HiveMonitor.CronServer do
-
   @moduledoc """
   The CronServer is an attempt to consolidate all HIVE-related chores into this
   one HiveMonitor zone. Typically in a HIVE system, you'll have certain chores
   like shell scripts, remote triggers, etc. that need to be run on a periodic
   timer (because not everything can be fully realtime eg. in FileMaker
   systems). 
-  
+
   The idea is that you make shell scripts or other system scripts to run the
   periodic maintenance tasks, and then you can run them periodically using this
   CronServer.  
@@ -20,20 +19,23 @@ defmodule HiveMonitor.CronServer do
   A "config" is basically a list of %Cron{}s, but since we don't have the Cron
   type at compile time, we have to pass it in as a map.
   """
-  @type config :: [%{
-    name: String.t(),
-    module: module(),
-    fun: function(),
-    args: [String.t()],
-    rate: integer()
-  }]
+  @type config :: [
+          %{
+            name: String.t(),
+            module: module(),
+            fun: function(),
+            args: [String.t()],
+            rate: integer()
+          }
+        ]
 
   defmodule Cron do
     @moduledoc false
 
     @enforce_keys [:name]
     defstruct [
-      :name, :tref,
+      :name,
+      :tref,
       module: System,
       fun: :cmd,
       args: ["/bin/echo", "hello world"],
@@ -45,18 +47,18 @@ defmodule HiveMonitor.CronServer do
     (Module, Function, Argument).
     """
     @type t :: %__MODULE__{
-      name: String.t(),
-      module: module(),
-      fun: function(),
-      args: [String.t()],
-      rate: integer(),
-      tref: :timer.tref(),
-    }
+            name: String.t(),
+            module: module(),
+            fun: function(),
+            args: [String.t()],
+            rate: integer(),
+            tref: :timer.tref()
+          }
   end
 
-  #----------------#
+  # ----------------#
   # Client Methods #
-  #----------------#
+  # ----------------#
 
   @doc """
   Starts the CronServer running. You don't typically need to do this by hand.
@@ -122,7 +124,8 @@ defmodule HiveMonitor.CronServer do
   @spec get_config() :: config()
   def get_config() do
     crons = GenServer.call(__MODULE__, :list_crons)
-    Enum.map(crons, fn(cron) ->
+
+    Enum.map(crons, fn cron ->
       %{
         name: cron.name,
         module: cron.module,
@@ -137,29 +140,30 @@ defmodule HiveMonitor.CronServer do
   Given a %Cron{}, run its Module/Function/Args.
   """
   def execute_cron(%Cron{} = cron) do
-    Logger.info("CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
-        "#{inspect cron.module} #{inspect cron.fun} #{inspect cron.args}")
+    Logger.info(
+      "CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
+        "#{inspect(cron.module)} #{inspect(cron.fun)} #{inspect(cron.args)}"
+    )
+
     apply(cron.module, cron.fun, cron.args)
   end
 
-  #----------------#
+  # ----------------#
   # Server Methods #
-  #----------------#
+  # ----------------#
 
   @doc false
   def init(args) do
     # Make sure that we run terminate() on exit.
     Process.flag(:trap_exit, true)
 
-    cron_maps =
-      Application.get_env(:hive_monitor, :crons) ++
-      Keyword.get(args, :crons, [])
+    cron_maps = Application.get_env(:hive_monitor, :crons) ++ Keyword.get(args, :crons, [])
 
     # We can't pass %Cron{}s from the config, so we have to use maps, and then
     # convert them to %Cron{}s here.
     state =
       cron_maps
-      |> Enum.map(&(struct(Cron, &1)))
+      |> Enum.map(&struct(Cron, &1))
       |> Enum.map(&delay_then_init/1)
 
     {:ok, state}
@@ -172,7 +176,9 @@ defmodule HiveMonitor.CronServer do
         updated_cron = set_timer(cron)
         new_state = [updated_cron | state]
         {:reply, updated_cron, new_state}
-      _ -> {:reply, {:error, "duplicate key"}, state}
+
+      _ ->
+        {:reply, {:error, "duplicate key"}, state}
     end
   end
 
@@ -180,7 +186,9 @@ defmodule HiveMonitor.CronServer do
   def handle_call({:delete_cron, name}, _from, state) do
     new_state =
       case find_name_index(state, name) do
-        :no_match -> state
+        :no_match ->
+          state
+
         index ->
           cancel_timer(Enum.at(state, index))
           List.delete_at(state, index)
@@ -199,13 +207,16 @@ defmodule HiveMonitor.CronServer do
     case find_name(state, name) do
       :no_match ->
         {:reply, {:error, "no key found"}, state}
+
       cron ->
         case cancel_timer(cron) do
           {:ok, :cancel} ->
             new_cron = set_timer(%{cron | rate: rate})
             new_state = replace_cron(state, cron, new_cron)
             {:reply, new_cron, new_state}
-          _ -> {:reply, {:error, "timer cancellation error"}, state}
+
+          _ ->
+            {:reply, {:error, "timer cancellation error"}, state}
         end
     end
   end
@@ -218,27 +229,29 @@ defmodule HiveMonitor.CronServer do
 
   @doc false
   def handle_info({:EXIT, _pid, reason}, state) do
-    Logger.info(fn -> "Quitting CronServer because: #{inspect reason}." end)
+    Logger.info(fn -> "Quitting CronServer because: #{inspect(reason)}." end)
     Enum.each(state, &cancel_timer/1)
     {:noreply, state}
   end
 
   @doc false
   def handle_info(message, state) do
-    Logger.info(fn -> "CronServer received a message: #{inspect message}." end)
+    Logger.info(fn -> "CronServer received a message: #{inspect(message)}." end)
     {:noreply, state}
   end
 
-  #----------------#
+  # ----------------#
   # Helper Methods #
-  #----------------#
+  # ----------------#
 
   # Cancel the Erlang timer for the given Cron (if there is a proper timer
   # reference)
   # See http://erlang.org/doc/man/timer.html for details
   defp cancel_timer(cron) do
     case cron.tref do
-      nil -> {:error, "no timer reference found"}
+      nil ->
+        {:error, "no timer reference found"}
+
       {:interval, _ref} ->
         Logger.info(fn -> "Cancelling timer for #{cron.name}" end)
         :timer.cancel(cron.tref)
@@ -257,14 +270,12 @@ defmodule HiveMonitor.CronServer do
   # The default "spread" of this timer is 5 minutes, but it can be configured
   # with the :hive_monitor, :cron_init_spread configuration variable.
   defp delay_then_init(cron) do
-    spread =
-      Application.get_env(:hive_monitor, :cron_init_spread) ||
-      :timer.minutes(5)
+    spread = Application.get_env(:hive_monitor, :cron_init_spread) || :timer.minutes(5)
     start_time = :rand.uniform(spread)
 
     Logger.info(fn ->
-      "Starting #{inspect cron.name}'s timer in " <>
-      "#{inspect(Float.round(start_time / 1000))} seconds."
+      "Starting #{inspect(cron.name)}'s timer in " <>
+        "#{inspect(Float.round(start_time / 1000))} seconds."
     end)
 
     Process.send_after(__MODULE__, {:set_timer, cron}, start_time)
@@ -274,12 +285,12 @@ defmodule HiveMonitor.CronServer do
 
   # Search the state for a Cron matching the given name
   defp find_name(state, name) do
-    Enum.find(state, :no_match, fn(cron) -> cron.name == name end)
+    Enum.find(state, :no_match, fn cron -> cron.name == name end)
   end
 
   # Same as find_name, but return the index of the matching Cron
   defp find_name_index(state, name) do
-    case Enum.find_index(state, fn(cron) -> cron.name == name end) do
+    case Enum.find_index(state, fn cron -> cron.name == name end) do
       nil -> :no_match
       index -> index
     end
@@ -301,10 +312,12 @@ defmodule HiveMonitor.CronServer do
         Logger.info(fn ->
           "CronServer activating #{cron.name}" <> " every #{cron.rate / 1000}s"
         end)
-        {:ok, tref} =
-          :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
+
+        {:ok, tref} = :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])
         %{cron | tref: tref}
-      _ -> cron
+
+      _ ->
+        cron
     end
   end
 end

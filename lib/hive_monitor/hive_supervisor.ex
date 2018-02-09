@@ -12,15 +12,18 @@ defmodule HiveMonitor.HiveSupervisor do
   end
 
   def init(:ok) do
-    Supervisor.init([
-      # The router takes care of handing incoming atoms from the HIVE
-      # SocketClient
-      HiveMonitor.Router,
-      # The CronServer handles any system tasks that we want to run on a
-      # periodic schedule.
-      HiveMonitor.CronServer,
-      # The PorticoBuffer is an EXPLO-specific GenServer that handles sending atoms to our Portico system at a rate it can handle.
-      HiveMonitor.PorticoBuffer
-    ], strategy: :one_for_one)
+    Supervisor.init(
+      [
+        # The router takes care of handing incoming atoms from the HIVE
+        # SocketClient
+        HiveMonitor.Router,
+        # The CronServer handles any system tasks that we want to run on a
+        # periodic schedule.
+        HiveMonitor.CronServer,
+        # The PorticoBuffer is an EXPLO-specific GenServer that handles sending atoms to our Portico system at a rate it can handle.
+        HiveMonitor.PorticoBuffer
+      ],
+      strategy: :one_for_one
+    )
   end
 end

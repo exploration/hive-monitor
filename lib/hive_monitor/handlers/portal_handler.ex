@@ -1,5 +1,4 @@
 defmodule HiveMonitor.PortalHandler do
-
   @moduledoc """
   Forward an atom to the Portal's incoming_atom endpoint.
   """
@@ -20,14 +19,15 @@ defmodule HiveMonitor.PortalHandler do
     atom_encoded = Handler.atom_to_uri_form(atom)
 
     body = "atom=#{atom_encoded}&portal_token=#{@portal_token}"
+
     headers = [
-        {"User-Agent", "HIVE Monitor"},
-        {"Content-Type", "application/x-www-form-urlencoded"}
+      {"User-Agent", "HIVE Monitor"},
+      {"Content-Type", "application/x-www-form-urlencoded"}
     ]
 
     %{status_code: status_code} = HTTPoison.post!(@portal_url, body, headers)
 
-    case(Enum.member?(200..299, status_code)) do
+    case Enum.member?(200..299, status_code) do
       true -> {:ok, :success}
       false -> :error
     end

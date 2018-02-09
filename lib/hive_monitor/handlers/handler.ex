@@ -18,7 +18,7 @@ defmodule HiveMonitor.Handler do
   is, each HiveAtom originating from the Portal system would have `application:
   "portal"`. 
   """
-  @callback application_name() :: String.t | :none
+  @callback application_name() :: String.t() | :none
 
   @doc """
   Take a HiveAtom from HIVE in realtime, and send it somewhere else.
@@ -35,13 +35,13 @@ defmodule HiveMonitor.Handler do
   def atom_to_uri_form(%HiveAtom{} = atom) do
     atom
     |> atom_to_json
-    |> URI.encode_www_form
+    |> URI.encode_www_form()
   end
 
   defp atom_to_json(%HiveAtom{} = atom) do
     atom
-    |> Map.from_struct
-    |> Poison.encode!
+    |> Map.from_struct()
+    |> Poison.encode!()
   end
 
   @doc """
@@ -61,11 +61,11 @@ defmodule HiveMonitor.Handler do
 
       Logger.info(fn ->
         "handling #{Enum.count(atom_list)} missed atoms from " <>
-        "#{inspect triplet} for #{receiving_app}"
+          "#{inspect(triplet)} for #{receiving_app}"
       end)
 
       Enum.each(atom_list, fn atom ->
-        atom |> Map.from_struct |> Router.route
+        atom |> Map.from_struct() |> Router.route()
       end)
     end
   end

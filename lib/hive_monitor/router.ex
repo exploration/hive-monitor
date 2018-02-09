@@ -1,5 +1,4 @@
 defmodule HiveMonitor.Router do
-
   @moduledoc """
   The HiveMonitor Router is a service designed to map incoming HIVE atoms to
   handler modules. It keeps a state of the atom "triplets", which identify the
@@ -25,11 +24,11 @@ defmodule HiveMonitor.Router do
   to a list of modules that implement the `Handler` behavior, which can
   receive a HIVE atom when one is routed in. 
   """
-  @type config :: %{HiveAtom.triplet => module_list}
+  @type config :: %{HiveAtom.triplet() => module_list}
 
-  #----------------#
+  # ----------------#
   # Client Methods #
-  #----------------#
+  # ----------------#
 
   @doc """
   Start this Router. Typically called by a Supervisor function.
@@ -111,13 +110,14 @@ defmodule HiveMonitor.Router do
     GenServer.call(__MODULE__, {:route, atom})
   end
 
-  #----------------#
+  # ----------------#
   # Server Methods #
-  #----------------#
+  # ----------------#
 
   @doc false
   def init(args) do
     config = Application.get_env(:hive_monitor, :router_config) || %{}
+
     config =
       case Keyword.fetch(args, :config) do
         {:ok, triplets} when is_map(triplets) -> triplets |> Map.merge(config)
@@ -131,9 +131,13 @@ defmodule HiveMonitor.Router do
 
   @doc false
   def handle_call({:add_handler, triplet, handler}, _from, known_triplets) do
-    new_state = Map.update(
-      known_triplets, triplet, MapSet.new([handler]), &MapSet.put(&1, handler)
-    )
+    new_state =
+      Map.update(
+        known_triplets,
+        triplet,
+        MapSet.new([handler]),
+        &MapSet.put(&1, handler)
+      )
 
     config = known_triplets_to_config(new_state)
 
@@ -148,11 +152,16 @@ defmodule HiveMonitor.Router do
 
   @doc false
   def handle_call({:remove_handler, triplet, handler}, _from, known_triplets) do
-    minus_handler = Map.update(
-      known_triplets, triplet, MapSet.new(), &MapSet.delete(&1, handler)
-    )
+    minus_handler =
+      Map.update(
+        known_triplets,
+        triplet,
+        MapSet.new(),
+        &MapSet.delete(&1, handler)
+      )
 
-    empty_set = MapSet.new
+    empty_set = MapSet.new()
+
     new_state =
       case Map.fetch(minus_handler, triplet) do
         {:ok, ^empty_set} -> Map.delete(minus_handler, triplet)
@@ -196,9 +205,9 @@ defmodule HiveMonitor.Router do
   defp log_and_send(module, atom) do
     Logger.info(fn ->
       "ATOM #{atom.id} received (#{atom.application}" <>
-      ",#{atom.context},#{atom.process})" <>
-      ", routing to #{to_string module}"
+        ",#{atom.context},#{atom.process}), routing to #{to_string(module)}"
     end)
+
     Task.async(module, :handle_atom, [atom])
   end
 
@@ -212,11 +221,11 @@ defmodule HiveMonitor.Router do
       case Map.fetch(known_triplets, triplet) do
         {:ok, module_list} ->
           Enum.map(module_list, &log_and_send(&1, atom))
+
         :error ->
           [Task.async(GenericHandler, :handle_atom, [atom])]
       end
 
     Enum.map(task_list, fn t -> Task.await(t, :timer.seconds(60)) end)
   end
-
 end
