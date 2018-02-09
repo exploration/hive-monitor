@@ -61,8 +61,9 @@ defmodule HiveMonitor.PorticoBuffer do
   """
   @spec send_atom_to_portico(HiveAtom.t()) :: {:ok, atom()}
   def send_atom_to_portico(%HiveAtom{} = atom) do
-    url =
-      "#{@server_url}?script=#{URI.encode(@script_name)}&param=#{atom_to_fm_query(atom)}"
+    url = "#{@server_url}?script=#{URI.encode(@script_name)}&param=#{atom_to_fm_query(atom)}"
+
+    Logger.info(fn -> "Sending atom #{atom.id} to Portico..." end)
 
     System.cmd("/usr/bin/open", [url])
 
@@ -76,7 +77,6 @@ defmodule HiveMonitor.PorticoBuffer do
   def update_rate(rate) do
     GenServer.call(__MODULE__, {:update_rate, rate})
   end
-
 
   # -----------------#
   # Handler Methods #
@@ -104,10 +104,12 @@ defmodule HiveMonitor.PorticoBuffer do
   @impl true
   def init(_args) do
     state = %State{}
-    Logger.info fn ->
+
+    Logger.info(fn ->
       "Starting PorticoBuffer at a rate of " <>
         "#{inspect(Float.round(state.rate / 1000))} seconds..."
-    end
+    end)
+
     send_next_dequeue_message(state)
     {:ok, state}
   end
@@ -137,10 +139,12 @@ defmodule HiveMonitor.PorticoBuffer do
   def handle_info(:dequeue, state) do
     {atom, remaining_atoms} = List.pop_at(state.atoms, -1)
     new_state = %{state | atoms: remaining_atoms}
+
     case atom do
       nil -> nil
       _ -> send_atom_to_portico(atom)
     end
+
     send_next_dequeue_message(state)
     {:noreply, new_state}
   end
