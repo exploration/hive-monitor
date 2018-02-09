@@ -32,7 +32,7 @@ defmodule RouterTest do
       config = Router.get_config()
 
       assert is_map(config)
-      assert Enum.count(config) == 0
+      assert Enum.empty?(config)
     end
 
     test "loads the initial config via passed params",

@@ -4,7 +4,7 @@ defmodule CronServerTest do
   alias HiveMonitor.CronServer.Cron
 
   setup do
-    { :ok, cron_name: "test" }
+    {:ok, cron_name: "test"}
   end
 
   describe "cron CRUD: " do
