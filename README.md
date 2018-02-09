@@ -40,3 +40,7 @@ system:
 
 Check the related modules for more details about how to preconfigure/save
 triplet/module maps and "Cron" jobs.
+
+# Documentation
+
+To generate browser-readable documentation for this project, you can type `mix docs`, and then `open doc/index.html`.

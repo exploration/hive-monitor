@@ -4,6 +4,8 @@ defmodule HiveMonitor.Mixfile do
   def project do
     [
       app: :hive_monitor,
+      name: "HIVE Monitor",
+      source_url: "https://bitbucket.org/explo/hive-monitor",
       version: "0.5.7",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -37,6 +39,8 @@ defmodule HiveMonitor.Mixfile do
   defp deps do
     [
       {:credo, "~> 0.9.0-rc1", only: [:dev, :test], runtime: false},
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev},
       {:httpoison, "~> 0.13"},
       {:logger_file_backend, "~> 0.0.10"},
       {:phoenix, "~> 1.3"},
