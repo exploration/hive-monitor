@@ -55,6 +55,12 @@ defmodule HiveMonitor.SocketClient do
   @doc false
   def handle_disconnected(reason, state) do
     Logger.error(fn -> "disconnected: #{inspect(reason)}, #{inspect(state)}" end)
+    ExploComm.HipChat.send_notification(
+      "WARNING: HIVE Monitor disconnected from HIVE channel.",
+      from: "HIVE Monitor",
+      mentions: ["Donald"],
+      room: 143945
+    )
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
   end
