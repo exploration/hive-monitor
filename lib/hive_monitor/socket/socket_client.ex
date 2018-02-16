@@ -24,7 +24,6 @@ defmodule HiveMonitor.SocketClient do
     GenSocketClient.start_link(
       __MODULE__,
       Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-      # "ws://localhost:4000/socket/websocket?token=#{token}"
       "wss://hive.explo.org/socket/websocket?token=#{token}"
     )
   end
@@ -41,13 +40,18 @@ defmodule HiveMonitor.SocketClient do
       start: {__MODULE__, :start_link, []},
       type: :worker,
       restart: :permanent,
-      shutdown: 500
+      shutdown: 20000
     }
   end
 
   @doc false
   def handle_connected(transport, state) do
     Logger.info(fn -> "connected" end)
+    ExploComm.HipChat.send_notification(
+      "INFO: HIVE Monitor connected to HIVE.",
+      from: "HIVE Monitor",
+      room: 143945
+    )
     GenSocketClient.join(transport, "atom:create")
     {:ok, state}
   end
