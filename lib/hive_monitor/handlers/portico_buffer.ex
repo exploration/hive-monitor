@@ -61,12 +61,11 @@ defmodule HiveMonitor.PorticoBuffer do
   """
   @spec send_atom_to_portico(HiveAtom.t()) :: {:ok, atom()}
   def send_atom_to_portico(%HiveAtom{} = atom) do
-    url = "#{@server_url}?script=#{URI.encode(@script_name)}&param=#{atom_to_fm_query(atom)}"
+    url = "#{@server_url}?script=#{URI.encode(@script_name)}" <>
+      "&param=#{atom_to_fm_query(atom)}"
 
     Logger.info(fn -> "Sending atom #{atom.id} to Portico..." end)
-    activate_fm_cmd = "tell application \"FileMaker Pro\" to activate"
-    System.cmd("/usr/bin/osascript", ["-e", activate_fm_cmd])
-    Process.sleep(:timer.seconds(1))
+
     System.cmd("/usr/bin/open", [url])
 
     {:ok, :fine}

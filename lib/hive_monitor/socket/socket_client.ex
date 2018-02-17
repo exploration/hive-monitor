@@ -40,7 +40,7 @@ defmodule HiveMonitor.SocketClient do
       start: {__MODULE__, :start_link, []},
       type: :worker,
       restart: :permanent,
-      shutdown: 20000
+      shutdown: 20_000
     }
   end
 
@@ -50,7 +50,7 @@ defmodule HiveMonitor.SocketClient do
     ExploComm.HipChat.send_notification(
       "INFO: HIVE Monitor connected to HIVE.",
       from: "HIVE Monitor",
-      room: 143945
+      room: 143_945
     )
     GenSocketClient.join(transport, "atom:create")
     {:ok, state}
@@ -63,7 +63,7 @@ defmodule HiveMonitor.SocketClient do
       "WARNING: HIVE Monitor disconnected from HIVE channel.",
       from: "HIVE Monitor",
       mentions: ["Donald"],
-      room: 143945
+      room: 143_945
     )
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
