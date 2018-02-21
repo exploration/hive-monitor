@@ -28,7 +28,17 @@ defmodule PorticoBufferTest do
       atom = %HiveAtom{}
       new_state = PorticoBuffer.add_atom(atom)
 
-      assert length(new_state.atoms) == 1
+      assert Enum.count(new_state.atoms) == 1
+    end
+
+    test "Adding a duplicate atom to the queue" do
+      {:ok, _} = start_supervised({PorticoBuffer, []})
+
+      atom = %HiveAtom{application: "test", data: "wat"}
+      PorticoBuffer.add_atom(atom)
+      new_state = PorticoBuffer.add_atom(atom)
+
+      assert Enum.count(new_state.atoms) == 1
     end
   end
 end
