@@ -57,6 +57,14 @@ defmodule HiveMonitor.PorticoBuffer do
   end
 
   @doc """
+  Returns the number of atoms currently in the buffer.
+  """
+  @spec get_buffer_count() :: integer()
+  def get_buffer_count() do
+    GenServer.call(__MODULE__, :get_buffer_count)
+  end
+
+  @doc """
   Give it a HiveAtom, and it'll send it to Portico.
   """
   @spec send_atom_to_portico(HiveAtom.t()) :: {:ok, atom()}
@@ -120,6 +128,13 @@ defmodule HiveMonitor.PorticoBuffer do
   def handle_call({:add_atom, atom}, _from, state) do
     new_state = update_in(state.atoms, fn atoms -> MapSet.put(atoms, atom) end)
     {:reply, new_state, new_state}
+  end
+
+  @doc false
+  @impl true
+  def handle_call(:get_buffer_count, _from, state) do
+    buffer_count = Enum.count(state.atoms)
+    {:reply, buffer_count, state}
   end
 
   @doc false
