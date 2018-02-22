@@ -39,16 +39,17 @@ defmodule HiveMonitor.Mixfile do
   defp deps do
     [
       {:credo, "~> 0.9.0-rc1", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev},
+      {:explo_comm, git: "bitbucket.org:explo/explo-comm.git"},
+      {:hive_service, git: "bitbucket.org:explo/hive-service.git"},
       {:httpoison, "~> 0.13"},
       {:logger_file_backend, "~> 0.0.10"},
       {:phoenix, "~> 1.3"},
       {:phoenix_gen_socket_client, "~> 1.2.0"},
       {:poison, "~> 3.1"},
-      {:websocket_client, github: "sanmiguel/websocket_client"},
-      {:explo_comm, git: "bitbucket.org:explo/explo-comm.git"},
-      {:hive_service, git: "bitbucket.org:explo/hive-service.git"}
+      {:websocket_client, github: "sanmiguel/websocket_client"}
     ]
   end
 
