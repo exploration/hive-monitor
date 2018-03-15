@@ -84,12 +84,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
   @doc false
   def handle_call(:get_stagnant_atoms, _from, state) do
-    stagnant_atoms =
-      state.current
-      |> MapSet.intersection(state.previous)
-      |> MapSet.to_list()
-
-    {:reply, {:ok, stagnant_atoms}, state}
+    {:reply, {:ok, stagnant_atoms(state)}, state}
   end
 
   @doc false
@@ -106,7 +101,8 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
   @doc false
   def handle_cast(:notify_if_stagnant, state) do
-    stagnant_atom_ids = Enum.map(get_stagnant_atoms(), fn atom -> atom.id end)
+    stagnant_atom_ids =
+      Enum.map(stagnant_atoms(state), fn atom -> atom.id end)
 
     case Enum.count(stagnant_atom_ids) do
       0 ->
@@ -121,5 +117,11 @@ defmodule HiveMonitor.StagnantAtomChecker do
     end
 
     {:noreply, state}
+  end
+
+  defp stagnant_atoms(state) do
+    state.current
+    |> MapSet.intersection(state.previous)
+    |> MapSet.to_list()
   end
 end
