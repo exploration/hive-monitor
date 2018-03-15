@@ -5,6 +5,8 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
   use GenServer
 
+  alias ExploComm.HipChat
+
   @typedoc """
   A `StagnantAtomChecker` holds two sets of Atoms: the previous run, and the current run, of `Handler.handle_missed_atom()`.
   """
@@ -32,7 +34,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
   Returns a list of atoms that remained in the list between the last "run" and the current "run".
   """
   @spec get_stagnant_atoms() :: state()
-  def get_stagnant_atoms() do
+  def get_stagnant_atoms do
     GenServer.call(__MODULE__, :get_stagnant_atoms)
   end
 
@@ -40,7 +42,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
   Just returns the the current state() data.
   """
   @spec get_state() :: state()
-  def get_state() do
+  def get_state do
     GenServer.call(__MODULE__, :get_state)
   end
 
@@ -48,7 +50,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
   Notify an admin if things are stagnant
   """
   @spec notify_if_stagnant() :: :ok
-  def notify_if_stagnant() do
+  def notify_if_stagnant do
     GenServer.cast(__MODULE__, :notify_if_stagnant)
   end
 
@@ -56,7 +58,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
   Copy the current run to the previous run, and reset the current run.
   """
   @spec reset_current() :: state()
-  def reset_current() do
+  def reset_current do
     GenServer.call(__MODULE__, :reset_current)
   end
 
@@ -111,7 +113,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
         false
 
       _ ->
-        ExploComm.HipChat.send_notification(
+        HipChat.send_notification(
           "WARNING: Stagnant atoms detected: #{inspect(stagnant_atom_ids)}",
           from: "HIVE Monitor",
           room: 143_945

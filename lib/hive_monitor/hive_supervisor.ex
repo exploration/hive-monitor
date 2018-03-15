@@ -20,9 +20,12 @@ defmodule HiveMonitor.HiveSupervisor do
         # The CronServer handles any system tasks that we want to run on a
         # periodic schedule.
         HiveMonitor.CronServer,
-        # The PorticoBuffer is an EXPLO-specific GenServer that handles sending atoms to our Portico system at a rate it can handle.
+        # The PorticoBuffer is an EXPLO-specific GenServer that handles
+        # sending atoms to our Portico system at a rate it can handle.
         HiveMonitor.PorticoBuffer,
-        # The StagnantAtomChecker keeps a list of any atoms that remain in the `Handler.handle_missed_atoms()` queue from one call to the next.
+        # The StagnantAtomChecker keeps a list of any atoms that remain
+        # in the `Handler.handle_missed_atoms()` queue from one call
+        # to the next.
         HiveMonitor.StagnantAtomChecker
       ],
       strategy: :one_for_one

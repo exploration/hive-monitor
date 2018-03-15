@@ -23,7 +23,7 @@ defmodule HiveMonitor.NotificationHandler do
 
   @doc false
   @impl true
-  def application_name(), do: HiveMonitor.application_name()
+  def application_name, do: HiveMonitor.application_name()
 
   @doc """
   Inspect the atom for information about what types of notifications to send,
@@ -128,9 +128,12 @@ defmodule HiveMonitor.NotificationHandler do
     with notifications_went_through? <-
            Enum.any?(status_list, fn {status, _} -> status == :ok end),
          no_valid_statuses? <-
-           Enum.all?(status_list, fn stat -> stat == {:error, :empty_recipients} end),
+           Enum.all?(status_list,
+             fn stat -> stat == {:error, :empty_recipients} end
+            ),
          put_receipt? <-
-           is_integer(atom.id) && (no_valid_statuses? || notifications_went_through?) do
+           is_integer(atom.id) && (no_valid_statuses? ||
+             notifications_went_through?) do
       case put_receipt? do
         true ->
           HiveService.put_receipt(atom.id, HiveMonitor.application_name())

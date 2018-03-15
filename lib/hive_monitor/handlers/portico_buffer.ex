@@ -52,15 +52,15 @@ defmodule HiveMonitor.PorticoBuffer do
   Returns the current state
   """
   @spec get_config() :: State.t()
-  def get_config() do
+  def get_config do
     GenServer.call(__MODULE__, :get_config)
   end
 
   @doc """
   Returns the number of atoms currently in the buffer.
   """
-  @spec get_buffer_count() :: integer()
-  def get_buffer_count() do
+  @spec get_buffer_count :: integer()
+  def get_buffer_count do
     GenServer.call(__MODULE__, :get_buffer_count)
   end
 
@@ -93,7 +93,7 @@ defmodule HiveMonitor.PorticoBuffer do
 
   @doc false
   @impl true
-  def application_name(), do: "portico"
+  def application_name, do: "portico"
 
   @doc """
   Add a new atom to the buffer. One will get sent to Portico every `rate` milliseconds.

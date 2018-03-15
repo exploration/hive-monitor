@@ -65,7 +65,7 @@ defmodule HiveMonitor.Router do
   file for when you eventually restart.
   """
   @spec get_config() :: config()
-  def get_config() do
+  def get_config do
     GenServer.call(__MODULE__, {:get_config})
   end
 

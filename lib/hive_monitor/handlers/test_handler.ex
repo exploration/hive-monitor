@@ -8,7 +8,7 @@ defmodule HiveMonitor.TestHandler do
 
   @doc false
   @impl true
-  def application_name(), do: :none
+  def application_name, do: :none
 
   @doc """
   When testing, we merely log the atom

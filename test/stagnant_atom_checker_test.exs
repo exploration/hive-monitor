@@ -7,8 +7,8 @@ defmodule StagnantAtomCheckerTest do
       {:ok, _} = start_supervised({StagnantAtomChecker, []})
       {:ok, state} = StagnantAtomChecker.get_state()
 
-      assert MapSet.size(state.current) == 0 
-      assert MapSet.size(state.previous) == 0 
+      assert MapSet.size(state.current) == 0
+      assert MapSet.size(state.previous) == 0
     end
 
     test "adding an atom list" do
@@ -59,11 +59,11 @@ defmodule StagnantAtomCheckerTest do
     end
   end
 
-  def extra_atoms() do
+  def extra_atoms do
     [%HiveAtom{application: 'test4'} | sample_atoms()]
   end
 
-  def sample_atoms() do
+  def sample_atoms do
     [
       %HiveAtom{application: 'test1'},
       %HiveAtom{application: 'test2'},

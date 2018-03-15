@@ -23,7 +23,10 @@ defmodule RouterTest do
 
     {
       :ok,
-      triplet: triplet, handler: handler, alt_handler: alt_handler, atom_map: atom_map
+      triplet: triplet,
+      handler: handler,
+      alt_handler: alt_handler,
+      atom_map: atom_map
     }
   end
 

@@ -15,7 +15,7 @@ defmodule HiveMonitor.SocketClient do
   import HiveMonitor.Router, only: [route: 1]
 
   @doc false
-  def start_link() do
+  def start_link do
     token =
       System.get_env("HIVE_SOCKET_TOKEN") ||
         Application.get_env(:hive_monitor, :hive_socket_token) || "no key"

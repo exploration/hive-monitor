@@ -11,7 +11,7 @@ defmodule HiveMonitor.PortalHandler do
 
   @doc false
   @impl true
-  def application_name(), do: "portal_production"
+  def application_name, do: "portal_production"
 
   @doc false
   @impl true

@@ -9,7 +9,7 @@ defmodule HiveMonitor.GenericHandler do
 
   @doc false
   @impl true
-  def application_name(), do: :none
+  def application_name, do: :none
 
   @doc false
   @impl true
