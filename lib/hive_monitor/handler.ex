@@ -54,12 +54,10 @@ defmodule HiveMonitor.Handler do
   """
   @spec handle_missed_atoms() :: [any()]
   def handle_missed_atoms() do
-    # TODO: clear StagnantAtomChecker's "current list"
     for {triplet, handler_list} <- Router.get_config(),
         handler <- handler_list do
       receiving_app = apply(handler, :application_name, [])
       atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
-      # TODO: send atom list to StagnantAtomChecker
 
       Logger.info(fn ->
         "handling #{Enum.count(atom_list)} missed atoms from " <>
