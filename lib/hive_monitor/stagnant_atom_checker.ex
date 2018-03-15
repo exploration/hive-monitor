@@ -112,7 +112,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
         HipChat.send_notification(
           "WARNING: Stagnant atoms detected: #{inspect(stagnant_atom_ids)}",
           from: "HIVE Monitor",
-          mentions: ["Donald", "Sam"]
+          mentions: ["Donald", "Sam"],
           room: 143_945
         )
     end
