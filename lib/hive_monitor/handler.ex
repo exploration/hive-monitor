@@ -10,7 +10,7 @@ defmodule HiveMonitor.Handler do
 
   require Logger
 
-  alias HiveMonitor.Router
+  alias HiveMonitor.{Router, StagnantAtomChecker}
 
   @doc """
   We need to set the application name that corresponds to each handler. For
@@ -53,20 +53,27 @@ defmodule HiveMonitor.Handler do
   Returns a list of the return statuses of each atom routing attempt.
   """
   @spec handle_missed_atoms() :: [any()]
-  def handle_missed_atoms() do
-    for {triplet, handler_list} <- Router.get_config(),
+  def handle_missed_atoms do
+    StagnantAtomChecker.reset_current()
+    status_list = for {triplet, handler_list} <- Router.get_config(),
         handler <- handler_list do
       receiving_app = apply(handler, :application_name, [])
       atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
 
-      Logger.info(fn ->
+      StagnantAtomChecker.add_atom_list(atom_list)
+      Logger.info fn ->
         "handling #{Enum.count(atom_list)} missed atoms from " <>
           "#{inspect(triplet)} for #{receiving_app}"
-      end)
-
-      Enum.each(atom_list, fn atom ->
-        atom |> Map.from_struct() |> Router.route()
-      end)
+      end
+      route_atom_list(atom_list)
     end
+    StagnantAtomChecker.notify_if_stagnant()
+    status_list
+  end
+
+  defp route_atom_list(atom_list) do
+    Enum.each(atom_list, fn atom ->
+      atom |> Map.from_struct() |> Router.route()
+    end)
   end
 end
