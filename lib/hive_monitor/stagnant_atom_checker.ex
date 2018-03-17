@@ -5,6 +5,8 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
   use GenServer
 
+  require Logger
+
   alias ExploComm.HipChat
 
   @typedoc """
@@ -101,20 +103,23 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
   @doc false
   def handle_cast(:notify_if_stagnant, state) do
-    stagnant_atom_ids =
-      Enum.map(stagnant_atoms(state), fn atom -> atom.id end)
+    stagnant_atom_ids = Enum.map(stagnant_atoms(state), & &1.id)
 
     case Enum.count(stagnant_atom_ids) do
       0 ->
         false
 
       _ ->
+        msg = "WARNING: Stagnant atoms detected: #{inspect(stagnant_atom_ids)}"
+
         HipChat.send_notification(
-          "WARNING: Stagnant atoms detected: #{inspect(stagnant_atom_ids)}",
+          msg,
           from: "HIVE Monitor",
           mentions: ["Donald", "Sam"],
           room: 143_945
         )
+
+        Logger.info(fn -> msg end)
     end
 
     {:noreply, state}
