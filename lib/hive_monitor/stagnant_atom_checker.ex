@@ -76,10 +76,9 @@ defmodule HiveMonitor.StagnantAtomChecker do
   end
 
   @doc false
-  def handle_call({:add_atom_list, atom_list}, _from, state) do
-    atom_mapset = MapSet.new(atom_list)
-    updated_current = MapSet.union(state.current, atom_mapset)
-    new_state = %{state | current: updated_current}
+  def handle_call({:append_atom_list, atom_list}, _from, state) do
+    new_current = atom_list |> MapSet.new() |> MapSet.union(state.current)
+    new_state = %{state | current: new_current}
 
     {:reply, {:ok, new_state}, new_state}
   end

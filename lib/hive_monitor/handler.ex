@@ -34,14 +34,9 @@ defmodule HiveMonitor.Handler do
   @spec atom_to_uri_form(HiveAtom.t()) :: String.t()
   def atom_to_uri_form(%HiveAtom{} = atom) do
     atom
-    |> atom_to_json
-    |> URI.encode_www_form()
-  end
-
-  defp atom_to_json(%HiveAtom{} = atom) do
-    atom
     |> Map.from_struct()
     |> Poison.encode!()
+    |> URI.encode_www_form()
   end
 
   @doc """
@@ -54,21 +49,28 @@ defmodule HiveMonitor.Handler do
   """
   @spec handle_missed_atoms() :: [any()]
   def handle_missed_atoms do
-    StagnantAtomChecker.reset_current()
-    status_list = for {triplet, handler_list} <- Router.get_config(),
-        handler <- handler_list do
-      receiving_app = apply(handler, :application_name, [])
-      atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
+    status_list = 
+      for {triplet, handler_list} <- Router.get_config(),
+          handler <- handler_list do
+        receiving_app = apply(handler, :application_name, [])
+        atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
 
-      StagnantAtomChecker.add_atom_list(atom_list)
-      Logger.info fn ->
-        "handling #{Enum.count(atom_list)} missed atoms from " <>
-          "#{inspect(triplet)} for #{receiving_app}"
+        StagnantAtomChecker.append_atom_list(atom_list)
+        log_missed_atoms(atom_list, triplet, receiving_app)
+        route_atom_list(atom_list)
       end
-      route_atom_list(atom_list)
-    end
+
     StagnantAtomChecker.notify_if_stagnant()
+    StagnantAtomChecker.reset_current()
+
     status_list
+  end
+  
+  defp log_missed_atoms(atom_list, triplet, receiving_app) do
+    Logger.info fn ->
+      "handling #{Enum.count(atom_list)} missed atoms from " <>
+        "#{inspect(triplet)} for #{receiving_app}"
+    end
   end
 
   defp route_atom_list(atom_list) do
