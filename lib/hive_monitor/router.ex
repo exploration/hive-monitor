@@ -72,7 +72,7 @@ defmodule HiveMonitor.Router do
   @doc """
   Stop handling the given triplet with the given handler. If the given triplet
   no longer has any handlers associated with it, the triplet will be removed
-  entirely fro the config.
+  entirely from the config.
 
   Returns the current `Router` config.
 
@@ -211,8 +211,7 @@ defmodule HiveMonitor.Router do
     Task.async(module, :handle_atom, [atom])
   end
 
-  # Attempt to asynchronously route the atom to all known handlers
-  # simultaneously. If no known handlers exist, route to the GenericHandler.
+  # Attempt to asynchronously route the atom to all known handlers. If no known handlers exist, route to the GenericHandler.
   defp routep(atom_map, known_triplets) do
     atom = HiveAtom.from_map(atom_map)
     triplet = HiveAtom.triplet(atom)
