@@ -13,7 +13,7 @@ defmodule StagnantAtomCheckerTest do
 
     test "adding an atom list" do
       {:ok, _} = start_supervised({StagnantAtomChecker, []})
-      {:ok, state} = StagnantAtomChecker.add_atom_list(sample_atoms())
+      {:ok, state} = StagnantAtomChecker.append_atom_list(sample_atoms())
 
       assert MapSet.size(state.current) == 3
       assert MapSet.size(state.previous) == 0
@@ -21,23 +21,23 @@ defmodule StagnantAtomCheckerTest do
 
     test "adding duplicate atoms" do
       {:ok, _} = start_supervised({StagnantAtomChecker, []})
-      StagnantAtomChecker.add_atom_list(sample_atoms())
-      {:ok, state} = StagnantAtomChecker.add_atom_list(sample_atoms())
+      StagnantAtomChecker.append_atom_list(sample_atoms())
+      {:ok, state} = StagnantAtomChecker.append_atom_list(sample_atoms())
 
       assert MapSet.size(state.current) == 3
     end
 
     test "adding extra atoms" do
       {:ok, _} = start_supervised({StagnantAtomChecker, []})
-      StagnantAtomChecker.add_atom_list(sample_atoms())
-      {:ok, state} = StagnantAtomChecker.add_atom_list(extra_atoms())
+      StagnantAtomChecker.append_atom_list(sample_atoms())
+      {:ok, state} = StagnantAtomChecker.append_atom_list(extra_atoms())
 
       assert MapSet.size(state.current) == 4
     end
 
     test "resetting current state" do
       {:ok, _} = start_supervised({StagnantAtomChecker, []})
-      StagnantAtomChecker.add_atom_list(sample_atoms())
+      StagnantAtomChecker.append_atom_list(sample_atoms())
       {:ok, state} = StagnantAtomChecker.reset_current()
 
       assert MapSet.size(state.current) == 0
@@ -47,9 +47,9 @@ defmodule StagnantAtomCheckerTest do
     test "stagnant atom check" do
       {:ok, _} = start_supervised({StagnantAtomChecker, []})
 
-      StagnantAtomChecker.add_atom_list(sample_atoms())
+      StagnantAtomChecker.append_atom_list(sample_atoms())
       StagnantAtomChecker.reset_current()
-      {:ok, state} = StagnantAtomChecker.add_atom_list(extra_atoms())
+      {:ok, state} = StagnantAtomChecker.append_atom_list(extra_atoms())
       {:ok, stagnant_atoms} = StagnantAtomChecker.get_stagnant_atoms()
 
       assert Enum.count(stagnant_atoms) == 3

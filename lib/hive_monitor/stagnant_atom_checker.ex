@@ -25,9 +25,9 @@ defmodule HiveMonitor.StagnantAtomChecker do
   @doc """
   Add an atom to the "current" list of atoms. If it's already in the list, it'll be ignored.
   """
-  @spec add_atom_list([HiveAtom.t()]) :: state()
-  def add_atom_list(atom_list) do
-    GenServer.call(__MODULE__, {:add_atom_list, atom_list})
+  @spec append_atom_list([HiveAtom.t()]) :: state()
+  def append_atom_list(atom_list) do
+    GenServer.call(__MODULE__, {:append_atom_list, atom_list})
   end
 
   @doc """
