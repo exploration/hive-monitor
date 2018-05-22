@@ -8,7 +8,7 @@
   "earmark": {:hex, :earmark, "0.2.1", "ba6d26ceb16106d069b289df66751734802777a3cbb6787026dd800ffeb850f3", [:mix], [], "hexpm"},
   "ex_doc": {:hex, :ex_doc, "0.12.0", "b774aabfede4af31c0301aece12371cbd25995a21bb3d71d66f5c2fe074c603f", [:mix], [{:earmark, "~> 0.2", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
   "explo": {:git, "bitbucket.org:explo/explo-elixir-utilities.git", "5418460a54e23f226d70fa4c6d1472aa66c5cd53", []},
-  "explo_comm": {:git, "git@bitbucket.org:explo/explo-comm.git", "5e797ac0c00310688a4f7cbdd8a1c5e21b815a36", []},
+  "explo_comm": {:git, "git@bitbucket.org:explo/explo-comm.git", "5ab9acd562b68a4236d785e59799865356ea6b1a", []},
   "gettext": {:hex, :gettext, "0.13.1", "5e0daf4e7636d771c4c71ad5f3f53ba09a9ae5c250e1ab9c42ba9edccc476263", [:mix], []},
   "hackney": {:hex, :hackney, "1.10.1", "c38d0ca52ea80254936a32c45bb7eb414e7a96a521b4ce76d00a69753b157f21", [], [{:certifi, "2.0.0", [hex: :certifi, repo: "hexpm", optional: false]}, {:idna, "5.1.0", [hex: :idna, repo: "hexpm", optional: false]}, {:metrics, "1.0.1", [hex: :metrics, repo: "hexpm", optional: false]}, {:mimerl, "1.0.2", [hex: :mimerl, repo: "hexpm", optional: false]}, {:ssl_verify_fun, "1.1.1", [hex: :ssl_verify_fun, repo: "hexpm", optional: false]}], "hexpm"},
   "hive_service": {:git, "git@bitbucket.org:explo/hive-service.git", "c3fe6c42ea28c1cc1e0e195d8248032555d5dac0", []},

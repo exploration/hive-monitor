@@ -19,7 +19,7 @@ defmodule HiveMonitor.NotificationHandler do
 
   @behaviour HiveMonitor.Handler
   require Logger
-  alias ExploComm.{HipChat, Mandrill, Twilio}
+  alias ExploComm.{Stride, Mandrill, Twilio}
 
   @doc false
   @impl true
@@ -53,14 +53,7 @@ defmodule HiveMonitor.NotificationHandler do
   def send_chat_notifications(data) do
     message = data["message"]
 
-    {:ok, response} =
-      HipChat.send_notification(
-        message,
-        from: data["from"],
-        mentions: data["chat_handles"],
-        room: data["room"]
-      )
-
+    {:ok, response} = Stride.send_notification(message)
     status = parse_status_code(response.status_code)
 
     if status == {:ok, :sent} do

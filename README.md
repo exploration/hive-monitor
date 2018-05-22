@@ -20,7 +20,8 @@ variables:
 
     config :explo,
       hive_api_token: "your token",
-      hipchat_api_token: "your token",
+      stride_api_token: "your token",
+      stride_api_url: "your room URL",
       mandrill_api_key: "your key"
       twilio_api_token: "your token"
 
