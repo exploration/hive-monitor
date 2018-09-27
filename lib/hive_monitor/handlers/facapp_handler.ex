@@ -11,7 +11,7 @@ defmodule HiveMonitor.FacappHandler do
 
   @doc false
   @impl true
-  def application_name, do: "facapp2_development"
+  def application_name, do: "facapp2_production"
 
   @doc false
   @impl true
