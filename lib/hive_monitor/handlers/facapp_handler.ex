@@ -7,7 +7,7 @@ defmodule HiveMonitor.FacappHandler do
   @behaviour Handler
 
   @token "70a81416c9a83910a0d0b8af4897e43ba330ef757d566285"
-  @url "http://facapp.explo.org/hive/incoming_atoms"
+  @url "https://facapp.explo.org/hive/incoming_atoms"
 
   @doc false
   @impl true
