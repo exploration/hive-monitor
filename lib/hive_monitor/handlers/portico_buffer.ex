@@ -153,7 +153,8 @@ defmodule HiveMonitor.PorticoBuffer do
   @doc false
   @impl true
   def handle_info(:dequeue, state) do
-    atom = Enum.at(state.atoms, Enum.count(state.atoms) - 1)
+    sorted_atoms = sort_atoms(state.atoms)
+    atom = Enum.at(sorted_atoms, 0)
     remaining_atoms = MapSet.delete state.atoms, atom
     new_state = %{state | atoms: remaining_atoms}
 
@@ -177,15 +178,28 @@ defmodule HiveMonitor.PorticoBuffer do
   # Helper Methods #
   # ----------------#
 
-  defp send_next_dequeue_message(state) do
-    Process.send_after(__MODULE__, :dequeue, state.rate)
-  end
-
   # FileMaker can't handle "+"es in passed queries, but otherwise handles them
   # like form data...
   defp atom_to_fm_query(%HiveAtom{} = atom) do
     atom
     |> Handler.atom_to_uri_form()
     |> String.replace("+", "%20")
+  end
+
+  defp compare_atoms(first_atom, second_atom) do
+    case NaiveDateTime.compare(HiveAtom.created_at(first_atom), 
+        HiveAtom.created_at(second_atom)) do
+      :lt -> true
+      :eq -> true
+      :gt -> false
+    end
+  end
+
+  defp send_next_dequeue_message(state) do
+    Process.send_after(__MODULE__, :dequeue, state.rate)
+  end
+
+  defp sort_atoms(state) do
+    Enum.sort(state.atoms, &compare_atoms/2)
   end
 end
