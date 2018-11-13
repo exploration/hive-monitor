@@ -17,7 +17,7 @@ defmodule HiveMonitor.PorticoBuffer do
   defmodule State do
     @moduledoc false
 
-    defstruct rate: :timer.seconds(15), atoms: MapSet.new()
+    defstruct rate: :timer.seconds(10), atoms: MapSet.new()
 
     @typedoc """
     The state of the PorticoBuffer has a rate (at which Portico receives atoms), and a list of atoms remaining to parse.
@@ -153,7 +153,7 @@ defmodule HiveMonitor.PorticoBuffer do
   @doc false
   @impl true
   def handle_info(:dequeue, state) do
-    sorted_atoms = sort_atoms(state.atoms)
+    sorted_atoms = sort_atoms_by_creation_date(state.atoms)
     atom = Enum.at(sorted_atoms, 0)
     remaining_atoms = MapSet.delete state.atoms, atom
     new_state = %{state | atoms: remaining_atoms}
@@ -199,7 +199,7 @@ defmodule HiveMonitor.PorticoBuffer do
     Process.send_after(__MODULE__, :dequeue, state.rate)
   end
 
-  defp sort_atoms(state) do
-    Enum.sort(state.atoms, &compare_atoms/2)
+  defp sort_atoms_by_creation_date(atom_list) do
+    Enum.sort(atom_list, &compare_atoms/2)
   end
 end
