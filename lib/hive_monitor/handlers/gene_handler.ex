@@ -7,7 +7,7 @@ defmodule HiveMonitor.GeneHandler do
   @behaviour Handler
 
   @token "3a9555043bea1ff8892914b8deceb0fd523243d0b"
-  @url "https://explo-gene.herokuapps.com/hive/incoming_atoms"
+  @url "https://portal.explo.org/hive/incoming_atoms"
 
   @doc false
   @impl true
