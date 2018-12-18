@@ -7,7 +7,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
   require Logger
 
-  alias ExploComm.Stride
+  alias ExploComm.Chat
 
   @typedoc """
   A `StagnantAtomChecker` holds two sets of Atoms: the previous run, and the current run, of `Handler.handle_missed_atom()`.
@@ -110,7 +110,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
       _ ->
         msg = "WARNING: Stagnant atoms detected: #{inspect(stagnant_atom_ids)}"
-        Stride.send_notification(msg)
+        Chat.send_notification(msg)
         Logger.info(fn -> msg end)
     end
 

@@ -7,7 +7,7 @@ defmodule HiveMonitor.SocketClient do
   to `atom:create` is where most of the magic happens in this piece.
   """
 
-  alias ExploComm.Stride
+  alias ExploComm.Chat
   alias Phoenix.Channels.GenSocketClient
   @behaviour GenSocketClient
 
@@ -48,7 +48,7 @@ defmodule HiveMonitor.SocketClient do
   @doc false
   def handle_connected(transport, state) do
     Logger.info(fn -> "connected" end)
-    Stride.send_notification("INFO: HIVE Monitor connected to HIVE.")
+    Chat.send_notification("INFO: HIVE Monitor connected to HIVE.")
     GenSocketClient.join(transport, "atom:create")
     {:ok, state}
   end
@@ -56,7 +56,7 @@ defmodule HiveMonitor.SocketClient do
   @doc false
   def handle_disconnected(reason, state) do
     Logger.error(fn -> "disconnected: #{inspect(reason)}, #{inspect(state)}" end)
-    Stride.send_notification(
+    Chat.send_notification(
       "WARNING: HIVE Monitor disconnected from HIVE channel."
     )
     Process.send_after(self(), :connect, :timer.seconds(1))
