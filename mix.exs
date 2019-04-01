@@ -6,7 +6,7 @@ defmodule HiveMonitor.Mixfile do
       app: :hive_monitor,
       name: "HIVE Monitor",
       source_url: "https://bitbucket.org/explo/hive-monitor",
-      version: "0.5.15",
+      version: "0.5.16",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: Mix.compilers(),
