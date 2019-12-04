@@ -11,7 +11,7 @@ defmodule HiveMonitor.CoursesHandler do
 
   @doc false
   @impl true
-  def application_name, do: "courses_production"
+  def application_name, do: "courses"
 
   @doc false
   @impl true
