@@ -110,7 +110,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
 
       _ ->
         msg = "WARNING: Stagnant atoms detected: #{inspect(stagnant_atom_ids)}"
-        Chat.send_notification(msg, System.get_env(:hive_monitor, :default_chat_url))
+        Chat.send_notification(msg, Application.get_env(:hive_monitor, :default_chat_url))
         Logger.info(fn -> msg end)
     end
 
