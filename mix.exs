@@ -38,13 +38,13 @@ defmodule HiveMonitor.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:credo, "~> 0.9.0-rc1", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
-      {:earmark, "~> 0.1", only: :dev},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.11", only: :dev},
       {:explo_comm, git: "git@bitbucket.org:explo/explo-comm.git"},
+      {:faker, "~> 0.16"},
       {:hive_service, git: "git@bitbucket.org:explo/hive-service.git"},
-      {:httpoison, "~> 0.13"},
+      {:httpoison, "~> 1.6"},
       {:logger_file_backend, "~> 0.0.10"},
       {:phoenix, "~> 1.3"},
       {:phoenix_gen_socket_client, "~> 1.2.0"},

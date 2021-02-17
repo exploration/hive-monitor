@@ -22,10 +22,11 @@ defmodule HiveMonitor.SocketClient do
 
     token = URI.encode(token)
 
+    url = System.get_env("HIVE_API_URL") || "wss://hive.explo.org"
     GenSocketClient.start_link(
       __MODULE__,
       Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-      "wss://hive.explo.org/socket/websocket?token=#{token}"
+      "#{url}/socket/websocket?token=#{token}"
     )
   end
 
@@ -48,7 +49,6 @@ defmodule HiveMonitor.SocketClient do
   @doc false
   def handle_connected(transport, state) do
     Logger.info(fn -> "connected" end)
-    Chat.send_notification("INFO: HIVE Monitor connected to HIVE.")
     GenSocketClient.join(transport, "atom:create")
     {:ok, state}
   end
@@ -57,7 +57,8 @@ defmodule HiveMonitor.SocketClient do
   def handle_disconnected(reason, state) do
     Logger.error(fn -> "disconnected: #{inspect(reason)}, #{inspect(state)}" end)
     Chat.send_notification(
-      "WARNING: HIVE Monitor disconnected from HIVE channel."
+      "WARNING: HIVE Monitor disconnected from HIVE channel.",
+      Application.get_env(:hive_monitor, :default_chat_url)
     )
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
