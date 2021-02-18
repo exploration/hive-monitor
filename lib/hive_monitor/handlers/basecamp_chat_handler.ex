@@ -47,17 +47,48 @@ defmodule HiveMonitor.BasecampChatHandler do
   def chatbot_response(creator, command) when is_binary(creator) and is_binary(command) do
     actions = [
       {~r/say.tech.things/i, &Faker.Company.catch_phrase/0},
-      {~r/help.me.out/i, fn -> "I totally agree with #{creator}." end}
+      {~r/help.me/i, fn -> sycophant(creator) end},
+      {~r/what.do.you.think/i, fn -> sycophant(creator) end}
     ]
 
-    default_response = "That's nice, #{creator} 👍"
+    default_response = """
+    That's nice, #{creator} 👍. 
+    <br>
+    Type <b>/help</b> or <b>/commands</b> to see what I can do.
+    """
 
     Enum.reduce(actions, default_response, fn {regex, response_fn}, acc ->
-      if command =~ regex do
-        response_fn.()
-      else
-        acc
+      cond do
+        command =~ regex -> response_fn.()
+        command =~ ~r/^.(help|command)/i -> help_text(actions)
+        true -> acc
       end
     end)
+  end
+
+  defp help_text(actions) do
+    action_list =
+      Enum.map(actions, fn {regex, _} ->
+        """
+        <li>
+          #{inspect(regex)}
+        </li>
+        """
+      end)
+
+    """
+    <ul>
+      #{action_list}
+    </ul>
+    """
+  end
+
+  defp sycophant(creator) do
+    Enum.random([
+      "I totally agree with #{creator}.",
+      "#{creator} is absolutely right.",
+      "I think #{creator} is spot-on.",
+      "That's such a good idea, #{creator}!"
+    ])
   end
 end

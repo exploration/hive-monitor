@@ -4,7 +4,13 @@ defmodule BasecampChatHandlerTest do
 
   describe "chatbot response" do
     test "no matching action" do
-      assert BCH.chatbot_response("Donald", "do something random") =~ "Donald"
+      assert BCH.chatbot_response("Donald", "do something random") =~ "That's nice"
+    end
+
+    test "help text" do
+      assert BCH.chatbot_response("Donald", "/help") =~ "say.tech"
+      assert BCH.chatbot_response("Donald", "/help") =~ "help.me"
+      assert BCH.chatbot_response("Donald", "/help") =~ "what.do"
     end
 
     test "say_tech_things" do
@@ -12,7 +18,8 @@ defmodule BasecampChatHandlerTest do
     end
 
     test "help me out" do
-      assert BCH.chatbot_response("Donald", "help me out") =~ "I totally agree"
+      assert BCH.chatbot_response("Donald", "help me out") =~ "Donald"
+      assert BCH.chatbot_response("Donald", "what do you think?") =~ "Donald"
     end
   end
 end
