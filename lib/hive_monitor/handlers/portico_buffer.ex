@@ -69,8 +69,9 @@ defmodule HiveMonitor.PorticoBuffer do
   """
   @spec send_atom_to_portico(HiveAtom.t()) :: {:ok, atom()}
   def send_atom_to_portico(%HiveAtom{} = atom) do
-    url = "#{@server_url}?script=#{URI.encode(@script_name)}" <>
-      "&param=#{atom_to_fm_query(atom)}"
+    url =
+      "#{@server_url}?script=#{URI.encode(@script_name)}" <>
+        "&param=#{atom_to_fm_query(atom)}"
 
     Logger.info(fn -> "Sending atom #{atom.id} to Portico..." end)
 
@@ -155,7 +156,7 @@ defmodule HiveMonitor.PorticoBuffer do
   def handle_info(:dequeue, state) do
     sorted_atoms = sort_atoms_by_creation_date(state.atoms)
     atom = Enum.at(sorted_atoms, 0)
-    remaining_atoms = MapSet.delete state.atoms, atom
+    remaining_atoms = MapSet.delete(state.atoms, atom)
     new_state = %{state | atoms: remaining_atoms}
 
     case atom do
@@ -187,8 +188,10 @@ defmodule HiveMonitor.PorticoBuffer do
   end
 
   defp compare_atoms(first_atom, second_atom) do
-    case NaiveDateTime.compare(HiveAtom.created_at(first_atom), 
-        HiveAtom.created_at(second_atom)) do
+    case NaiveDateTime.compare(
+           HiveAtom.created_at(first_atom),
+           HiveAtom.created_at(second_atom)
+         ) do
       :lt -> true
       :eq -> true
       :gt -> false

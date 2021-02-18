@@ -157,8 +157,9 @@ defmodule HiveMonitor.CronServer do
     # Make sure that we run terminate() on exit.
     Process.flag(:trap_exit, true)
 
-    cron_maps = Application.get_env(:hive_monitor, :crons) ++
-      Keyword.get(args, :crons, [])
+    cron_maps =
+      Application.get_env(:hive_monitor, :crons) ++
+        Keyword.get(args, :crons, [])
 
     # We can't pass %Cron{}s from the config, so we have to use maps, and then
     # convert them to %Cron{}s here.
@@ -271,8 +272,10 @@ defmodule HiveMonitor.CronServer do
   # The default "spread" of this timer is 5 minutes, but it can be configured
   # with the :hive_monitor, :cron_init_spread configuration variable.
   defp delay_then_init(cron) do
-    spread = Application.get_env(:hive_monitor, :cron_init_spread) ||
-      :timer.minutes(5)
+    spread =
+      Application.get_env(:hive_monitor, :cron_init_spread) ||
+        :timer.minutes(5)
+
     start_time = :rand.uniform(spread)
 
     Logger.info(fn ->

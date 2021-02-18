@@ -8,7 +8,7 @@ defmodule HiveMonitor.BasecampChatHandler do
 
   ## Examples
 
-      (in Basecamp chat): !itbot say_tech_things
+      (in Basecamp chat): !itbot say tech things
       "focus the laser on the platform interface"
   """
 
@@ -21,32 +21,42 @@ defmodule HiveMonitor.BasecampChatHandler do
   @doc false
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
-    with {:ok, callback_url} <- callback_url(atom),
-         response <- chatbot_response(atom) do
+    with %{
+           "callback_url" => callback_url,
+           "command" => command,
+           "creator" => %{"name" => creator}
+         } <- HiveAtom.data_map(atom),
+         response <- chatbot_response(creator, command) do
       HiveService.put_receipt(atom.id, application_name())
-      %{status_code: status_code} = HTTPoison.post!(callback_url, [{"content", response}])
-      Enum.member?(200..299, status_code) 
+
+      headers = [
+        {"User-Agent", "HIVE Monitor"},
+        {"Content-Type", "application/json"}
+      ]
+
+      body = ~s({"content":"#{response}"})
+
+      %{status_code: status_code} = HTTPoison.post!(callback_url, body, headers)
+      Enum.member?(200..299, status_code)
     else
       _ -> false
     end
   end
 
-  @spec chatbot_response(HiveAtom.t) :: String.t
-  def chatbot_response(%HiveAtom{} = atom) do
-    command =
-      atom
-      |> HiveAtom.data_map()
-      |> Map.get("command", "")
+  @spec chatbot_response(String.t(), String.t()) :: String.t()
+  def chatbot_response(creator, command) when is_binary(creator) and is_binary(command) do
+    actions = [
+      {~r/say.tech.things/i, &Faker.Company.catch_phrase/0}
+    ]
 
-    case command do
-      "say_tech_things" -> Faker.Company.catch_phrase()
-      _ -> "command not understood"
-    end
-  end
+    default_response = "That's nice #{creator} 👍"
 
-  defp callback_url(atom) do
-    atom
-    |> HiveAtom.data_map()
-    |> Map.fetch("callback_url")
+    Enum.reduce(actions, default_response, fn {regex, response_fn}, acc ->
+      if command =~ regex do
+        response_fn.()
+      else
+        acc
+      end
+    end)
   end
 end

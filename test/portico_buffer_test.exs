@@ -28,7 +28,7 @@ defmodule PorticoBufferTest do
       atom = %HiveAtom{}
       PorticoBuffer.add_atom(atom)
 
-      assert PorticoBuffer.get_buffer_count == 1
+      assert PorticoBuffer.get_buffer_count() == 1
     end
 
     test "Adding a duplicate atom to the queue" do
@@ -38,7 +38,7 @@ defmodule PorticoBufferTest do
       PorticoBuffer.add_atom(atom)
       PorticoBuffer.add_atom(atom)
 
-      assert PorticoBuffer.get_buffer_count == 1
+      assert PorticoBuffer.get_buffer_count() == 1
     end
   end
 end
