@@ -58,9 +58,7 @@ defmodule HiveMonitor.BasecampChatHandler do
     ]
 
     default_response = """
-    That's nice, #{creator} 👍. 
-    <br>
-    Type <strong>/help</strong> or <strong>/commands</strong> to see what I can do.
+    That's nice, #{creator} 👍.<br>Type <strong>/help</strong> or <strong>/commands</strong> to see what I can do.
     """
 
     Enum.reduce(actions, default_response, fn {regex, response_fn}, acc ->
