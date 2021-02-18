@@ -57,7 +57,7 @@ defmodule HiveMonitor.BasecampChatHandler do
       {~r/what.do.you.think/i, fn -> sycophant(creator) end}
     ]
 
-    default_response = "That's nice, #{creator} 👍.<br>Type <strong>/help</strong> or <strong>/commands</strong> to see what I can do."
+    default_response = "That's nice, #{creator} 👍.<br><br>Type <strong>!itbot /help</strong> or <strong>!itbot /commands</strong> to see what I can do."
 
     Enum.reduce(actions, default_response, fn {regex, response_fn}, acc ->
       cond do
@@ -71,7 +71,7 @@ defmodule HiveMonitor.BasecampChatHandler do
   defp help_text(actions) do
     action_list =
       actions
-      |> Enum.map(fn {regex, _} -> "<li>#{inspect(regex)}</li>" end)
+      |> Enum.map(fn {regex, _} -> "<li><strong>#{inspect(regex)}</strong></li>" end)
       |> Enum.join()
 
     "Here's what I'm listening for:<br><ul>#{action_list}</ul>"
