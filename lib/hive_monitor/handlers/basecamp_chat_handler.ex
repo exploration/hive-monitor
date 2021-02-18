@@ -11,11 +11,13 @@ defmodule HiveMonitor.BasecampChatHandler do
       (in Basecamp chat): !itbot say tech things
       "focus the laser on the platform interface"
 
-  ## Notes
+  ## Notes on Basecamp chat formatting
   
   Per Basecamp's docs:
 
-  > In addition to the tags permitted for all rich text, the following tags are permitted for chatbot lines: `table`, `tr`, `td`, `th`, `thead`, `tbody`, `details`, and `summary`.
+  > You may use the following standard HTML tags in rich text content: `div`, `h1`, `br`, `strong`, `em`, `strike`, `a` (with an `href` attribute), `pre`, `ol`, `ul`, `li`, and `blockquote`. Any other tags will be removed automatically. In addition to the tags permitted for all rich text, the following tags are permitted for chatbot lines: `table`, `tr`, `td`, `th`, `thead`, `tbody`, `details`, and `summary`.
+
+  What they _don't_ say is that you have to have all rich-text responses on one line. HTML that has line breaks will not be accepted - consider yourself warned!
   """
 
   @behaviour HiveMonitor.Handler
