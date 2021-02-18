@@ -76,7 +76,7 @@ defmodule HiveMonitor.BasecampChatHandler do
     action_list =
       actions
       |> Enum.map(fn {regex, _} -> "<li>#{inspect(regex)}</li>" end)
-      |> Enum.join("<br>")
+      |> Enum.join()
 
     "Here's what I'm listening for:<br><ul>#{action_list}</ul>"
   end
