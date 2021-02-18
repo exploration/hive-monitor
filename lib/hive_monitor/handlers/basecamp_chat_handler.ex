@@ -51,6 +51,11 @@ defmodule HiveMonitor.BasecampChatHandler do
     end
   end
 
+  @doc """
+  Given a `creator` and a chat `command`, respond in various ways.
+
+  Basically we're comparing the `command` against a list of regular expressions, and then running functions that return text depending on the command.
+  """
   @spec chatbot_response(String.t(), String.t()) :: String.t()
   def chatbot_response(creator, command) when is_binary(creator) and is_binary(command) do
     actions = [
