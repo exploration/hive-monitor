@@ -75,13 +75,10 @@ defmodule HiveMonitor.BasecampChatHandler do
   defp help_text(actions) do
     action_list =
       actions
-      |> Enum.map(fn {regex, _} -> "#{inspect(regex)}" end)
+      |> Enum.map(fn {regex, _} -> "<li>#{inspect(regex)}</li>" end)
       |> Enum.join("<br>")
 
-    """
-    <summary> Here's what I'm listening for: </summary>
-    <details> #{action_list} </details>
-    """
+    "Here's what I'm listening for:<br><ul>#{action_list}</ul>"
   end
 
   defp sycophant(creator) do

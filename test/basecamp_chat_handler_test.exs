@@ -11,6 +11,7 @@ defmodule BasecampChatHandlerTest do
       assert BCH.chatbot_response("Donald", "/help") =~ "say.tech"
       assert BCH.chatbot_response("Donald", "/help") =~ "help.me"
       assert BCH.chatbot_response("Donald", "/help") =~ "what.do"
+      IO.puts BCH.chatbot_response("Donald", "/help")
     end
 
     test "say_tech_things" do
