@@ -60,7 +60,7 @@ defmodule HiveMonitor.BasecampChatHandler do
     default_response = """
     That's nice, #{creator} 👍. 
     <br>
-    Type <b>/help</b> or <b>/commands</b> to see what I can do.
+    Type <strong>/help</strong> or <strong>/commands</strong> to see what I can do.
     """
 
     Enum.reduce(actions, default_response, fn {regex, response_fn}, acc ->
@@ -75,10 +75,14 @@ defmodule HiveMonitor.BasecampChatHandler do
   defp help_text(actions) do
     action_list =
       Enum.map(actions, fn {regex, _} ->
-        "<tr><td>#{inspect(regex)}</td></tr>"
+        "<li>#{inspect(regex)}</li>"
       end)
 
-    "<table>#{action_list}</table>"
+    """
+    Here's what I'm listening for:
+    <br><br>
+    <ul>#{action_list}</ul>
+    """
   end
 
   defp sycophant(creator) do
