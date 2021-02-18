@@ -46,10 +46,11 @@ defmodule HiveMonitor.BasecampChatHandler do
   @spec chatbot_response(String.t(), String.t()) :: String.t()
   def chatbot_response(creator, command) when is_binary(creator) and is_binary(command) do
     actions = [
-      {~r/say.tech.things/i, &Faker.Company.catch_phrase/0}
+      {~r/say.tech.things/i, &Faker.Company.catch_phrase/0},
+      {~r/help.me.out/i, fn -> "I totally agree with #{creator}." end}
     ]
 
-    default_response = "That's nice #{creator} 👍"
+    default_response = "That's nice, #{creator} 👍"
 
     Enum.reduce(actions, default_response, fn {regex, response_fn}, acc ->
       if command =~ regex do

@@ -10,5 +10,9 @@ defmodule BasecampChatHandlerTest do
     test "say_tech_things" do
       refute BCH.chatbot_response("Donald", "say tech things") =~ "Donald"
     end
+
+    test "help me out" do
+      assert BCH.chatbot_response("Donald", "help me out") =~ "I totally agree"
+    end
   end
 end
