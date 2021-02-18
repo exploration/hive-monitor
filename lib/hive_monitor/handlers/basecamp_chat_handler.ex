@@ -33,7 +33,7 @@ defmodule HiveMonitor.BasecampChatHandler do
            "creator" => %{"name" => creator}
          } <- HiveAtom.data_map(atom),
          response <- chatbot_response(creator, command) do
-      HiveService.put_receipt(atom.id, application_name())
+      HiveService.delete_atom(atom.id)
 
       headers = [
         {"User-Agent", "HIVE Monitor"},
@@ -74,14 +74,13 @@ defmodule HiveMonitor.BasecampChatHandler do
 
   defp help_text(actions) do
     action_list =
-      Enum.map(actions, fn {regex, _} ->
-        "<li>#{inspect(regex)}</li>"
-      end)
+      actions
+      |> Enum.map(fn {regex, _} -> "#{inspect(regex)}" end)
+      |> Enum.join("<br>")
 
     """
-    Here's what I'm listening for:
-    <br><br>
-    <ul>#{action_list}</ul>
+    <summary> Here's what I'm listening for: </summary>
+    <details> #{action_list} </details>
     """
   end
 
