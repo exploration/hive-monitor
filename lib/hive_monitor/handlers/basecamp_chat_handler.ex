@@ -10,6 +10,12 @@ defmodule HiveMonitor.BasecampChatHandler do
 
       (in Basecamp chat): !itbot say tech things
       "focus the laser on the platform interface"
+
+  ## Notes
+  
+  Per Basecamp's docs:
+
+  > In addition to the tags permitted for all rich text, the following tags are permitted for chatbot lines: `table`, `tr`, `td`, `th`, `thead`, `tbody`, `details`, and `summary`.
   """
 
   @behaviour HiveMonitor.Handler
@@ -69,18 +75,10 @@ defmodule HiveMonitor.BasecampChatHandler do
   defp help_text(actions) do
     action_list =
       Enum.map(actions, fn {regex, _} ->
-        """
-        <li>
-          #{inspect(regex)}
-        </li>
-        """
+        "<tr><td>#{inspect(regex)}</td></tr>"
       end)
 
-    """
-    <ul>
-      #{action_list}
-    </ul>
-    """
+    "<table>#{action_list}</table>"
   end
 
   defp sycophant(creator) do
