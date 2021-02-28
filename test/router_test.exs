@@ -18,8 +18,8 @@ defmodule RouterTest do
       atom_map["process"]
     }
 
-    handler = HiveMonitor.TestHandler
-    alt_handler = HiveMonitor.GenericHandler
+    handler = HiveMonitor.Handlers.TestHandler
+    alt_handler = HiveMonitor.Handlers.GenericHandler
 
     {
       :ok,
