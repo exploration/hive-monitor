@@ -6,13 +6,14 @@ defmodule HiveMonitor.Mixfile do
       app: :hive_monitor,
       name: "HIVE Monitor",
       source_url: "https://bitbucket.org/explo/hive-monitor",
-      version: "0.5.16",
+      version: "1.0.0",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: Mix.compilers(),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       aliases: aliases()
     ]
   end
@@ -50,6 +51,13 @@ defmodule HiveMonitor.Mixfile do
       {:phoenix_gen_socket_client, "~> 1.2.0"},
       {:poison, "~> 3.1"},
       {:websocket_client, github: "sanmiguel/websocket_client"}
+    ]
+  end
+
+  def docs do
+    [
+      main: "HiveMonitor"
+      # extras: [""]
     ]
   end
 
