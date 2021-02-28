@@ -1,1 +1,2 @@
-alias HiveMonitor.{CronServer, Handler, PorticoBuffer, Router}
+alias HiveMonitor.{CronServer, Handler, Router}
+alias HiveMonitor.Handlers.PorticoBuffer
