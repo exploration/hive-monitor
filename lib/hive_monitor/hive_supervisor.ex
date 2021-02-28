@@ -1,8 +1,6 @@
 defmodule HiveMonitor.HiveSupervisor do
   @moduledoc """
-  This supervisor handles all processes related to HIVE-specific parsing,
-  such as the HIVE atom router, and the CRON server for keeping external
-  processes in sync.
+  Handle processes related to HIVE-specific parsing.
   """
 
   use Supervisor
@@ -17,14 +15,17 @@ defmodule HiveMonitor.HiveSupervisor do
         # The router takes care of handing incoming atoms from the HIVE
         # SocketClient
         HiveMonitor.Router,
+
         # The CronServer handles any system tasks that we want to run on a
         # periodic schedule.
         HiveMonitor.CronServer,
+
         # The PorticoBuffer is an EXPLO-specific GenServer that handles
         # sending atoms to our Portico system at a rate it can handle.
         HiveMonitor.PorticoBuffer,
+
         # The StagnantAtomChecker keeps a list of any atoms that remain
-        # in the `Handler.handle_missed_atoms()` queue from one call
+        # in the `Router.handle_missed_atoms()` queue from one call
         # to the next.
         HiveMonitor.StagnantAtomChecker
       ],
