@@ -9,6 +9,8 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :phoenix, :json_library, Jason
+
 # If you have any "Cron" (periodically-run) tasks that you need HiveMonitor to
 # manage, you can set them up here.
 # For a CRON to work, you need:
