@@ -36,7 +36,7 @@ defmodule HiveMonitor.Handler do
   def atom_to_uri_form(%HiveAtom{} = atom) do
     atom
     |> Map.from_struct()
-    |> Poison.encode!()
+    |> Jason.encode!()
     |> URI.encode_www_form()
   end
 end

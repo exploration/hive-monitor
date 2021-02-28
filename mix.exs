@@ -49,7 +49,7 @@ defmodule HiveMonitor.Mixfile do
       {:logger_file_backend, "~> 0.0.10"},
       {:phoenix, "~> 1.3"},
       {:phoenix_gen_socket_client, "~> 1.2.0"},
-      {:poison, "~> 3.1"},
+      {:jason, "~> 1.2"},
       {:websocket_client, github: "sanmiguel/websocket_client"}
     ]
   end

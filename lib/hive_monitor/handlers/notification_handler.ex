@@ -31,7 +31,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
   """
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
-    case Poison.decode(atom.data) do
+    case Jason.decode(atom.data) do
       {:ok, data} ->
         status_list =
           run_if_not_empty(
