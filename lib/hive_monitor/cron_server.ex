@@ -1,6 +1,8 @@
 defmodule HiveMonitor.CronServer do
   @moduledoc """
-  The CronServer is an attempt to consolidate all HIVE-related chores into this
+  Run periodic jobs for the HIVE Monitor.
+
+  `CronServer` is an attempt to consolidate all HIVE-related chores into this
   one HiveMonitor zone. Typically in a HIVE system, you'll have certain chores
   like shell scripts, remote triggers, etc. that need to be run on a periodic
   timer (because not everything can be fully realtime eg. in FileMaker
@@ -11,13 +13,17 @@ defmodule HiveMonitor.CronServer do
   CronServer.  
   """
 
+  alias HiveMonitor.CronServer.Cron
+
   use GenServer
 
   require Logger
 
   @typedoc """
-  A "config" is basically a list of %Cron{}s, but since we don't have the Cron
-  type at compile time, we have to pass it in as a map.
+  A "config" is basically a list of `%CronServer.Cron{}`s.
+
+  Since we don't have the `%CronServer.Cron{}` type at compile time, we have to pass it in as a
+  map.
   """
   @type config :: [
           %{
@@ -29,39 +35,15 @@ defmodule HiveMonitor.CronServer do
           }
         ]
 
-  defmodule Cron do
-    @moduledoc false
-
-    @enforce_keys [:name]
-    defstruct [
-      :name,
-      :tref,
-      module: System,
-      fun: :cmd,
-      args: ["/bin/echo", "hello world"],
-      rate: :timer.minutes(60)
-    ]
-
-    @typedoc """
-    A "Cron" is a task to perform. This can be a system call, or any Elixir MFA
-    (Module, Function, Argument).
-    """
-    @type t :: %__MODULE__{
-            name: String.t(),
-            module: module(),
-            fun: function(),
-            args: [String.t()],
-            rate: integer(),
-            tref: :timer.tref()
-          }
-  end
-
   # ----------------#
   # Client Methods #
   # ----------------#
 
   @doc """
-  Starts the CronServer running. You don't typically need to do this by hand.
+  Starts the CronServer running. 
+
+  You don't typically need to do this by hand.
+
   You can't pass methods to this server, instead use the :hive_monitor :crons
   config variable to send them in.
   """
@@ -71,11 +53,14 @@ defmodule HiveMonitor.CronServer do
   end
 
   @doc """
-  Add a new Cron. Send it a %Cron{} struct with a unique name, and it'll be
-  happy. When a Cron is added by hand, its timer is started immediately.
+  Add a new Cron. 
+
+  Send it a `%Cron{}` struct with a unique name, and it'll be happy. When a Cron
+  is added by hand, its timer is started immediately.
 
   Returns the Cron, with an updated timer reference, on success.
-  Returns {:error, "description"} otherwise.
+
+  Returns `{:error, "description"}` otherwise.
   """
   @spec add_cron(Cron.t()) :: config()
   def add_cron(cron) do
@@ -97,10 +82,10 @@ defmodule HiveMonitor.CronServer do
   @doc """
   Update a Cron's timer (by name and rate in ms).
 
-  Returns the updated Cron struct on success, and {:error, "description"}
+  Returns the updated Cron struct on success, and `{:error, "description"}`
   otherwise.
 
-  Pro tip: Use :timer.seconds() / :timer.minutes() etc. as a convenience
+  Pro tip: Use `:timer.seconds/1` / `:timer.minutes/1` etc. as a convenience
   method so you don't have to do manual millisecond math.
   """
   @spec update_rate(String.t(), integer()) :: Cron.t()
@@ -117,9 +102,11 @@ defmodule HiveMonitor.CronServer do
   end
 
   @doc """
-  Returns a list of all Crons currently running as a map. This is handy for
-  copy/pasting into the `:hive_monitor, :crons` config variable for when you've
-  made changes to the server on-the-fly and want to store them.
+  Returns a list of all Crons currently running as a map. 
+
+  This is handy for copy/pasting into the `:hive_monitor, :crons` config
+  variable for when you've made changes to the server on-the-fly and want to
+  store them.
   """
   @spec get_config() :: config()
   def get_config do
