@@ -15,23 +15,19 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def start_link do
-    token =
-      Application.get_env(:hive_monitor, :hive_socket_token) ||
-        "no key"
-        |> URI.encode()
-
-    url = "wss://hive.explo.org"
-
     GenSocketClient.start_link(
       __MODULE__,
       Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-      "#{url}/socket/websocket?token=#{token}"
+      "wss://hive.explo.org/socket/websocket"
     )
   end
 
   @doc false
   def init(url) do
-    {:connect, url, %{}}
+    token =
+      Application.get_env(:hive_monitor, :hive_socket_token, "no token")
+
+    {:connect, url, [token: token], %{first_join: true}}
   end
 
   @doc false
