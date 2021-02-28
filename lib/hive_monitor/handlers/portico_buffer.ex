@@ -1,6 +1,8 @@
-defmodule HiveMonitor.PorticoBuffer do
+defmodule HiveMonitor.Handlers.PorticoBuffer do
   @moduledoc """
-  The PorticoBuffer exists because Portico is no good at handling a lot of information all at once. Specifically, it's really bad at handling multiple simultaneous script invocations. Since HIVE Atoms come through HIVE Monitor in realtime, we build this "buffer" as a way of squirting them over to Portico at a rate that Portico can handle. 
+  Eke atoms over to Portico at a rate it can handle.
+
+  Portico is no good at handling a lot of information all at once. Specifically, it's really bad at handling multiple simultaneous script invocations. Since HIVE Atoms come through HIVE Monitor in realtime, we build this "buffer" as a way of squirting them over to Portico at a rate that Portico can handle. 
   """
 
   use GenServer
@@ -8,32 +10,21 @@ defmodule HiveMonitor.PorticoBuffer do
   require Logger
 
   alias HiveMonitor.Handler
+  alias HiveMonitor.Handlers.PorticoBuffer.State
 
   @behaviour Handler
 
   @script_name "pub - receive new atom from HIVE (atom_json)"
   @server_url "fmp://minerva.explo.org/hive_data"
 
-  defmodule State do
-    @moduledoc false
-
-    defstruct rate: :timer.seconds(10), atoms: MapSet.new()
-
-    @typedoc """
-    The state of the PorticoBuffer has a rate (at which Portico receives atoms), and a list of atoms remaining to parse.
-    """
-    @type t :: %__MODULE__{
-            rate: integer(),
-            atoms: MapSet.t(HiveAtom.t())
-          }
-  end
-
   # ----------------#
   # Client Methods #
   # ----------------#
 
   @doc """
-  Starts the PorticoBuffer running. You don't typically need to do this by hand.
+  Starts the PorticoBuffer running
+
+  You don't typically need to do this by hand.
   """
   @spec start_link(keyword()) :: GenServer.on_start()
   def start_link(_args) do
