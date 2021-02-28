@@ -1,4 +1,4 @@
-defmodule HiveMonitor.BasecampChatHandler do
+defmodule HiveMonitor.Handlers.BasecampChatHandler do
   @moduledoc """
   Basecamp "bot" for chats.
 
@@ -12,7 +12,7 @@ defmodule HiveMonitor.BasecampChatHandler do
       "focus the laser on the platform interface"
 
   ## Notes on Basecamp chat formatting
-  
+
   Per Basecamp's docs:
 
   > You may use the following standard HTML tags in rich text content: `div`, `h1`, `br`, `strong`, `em`, `strike`, `a` (with an `href` attribute), `pre`, `ol`, `ul`, `li`, and `blockquote`. Any other tags will be removed automatically. In addition to the tags permitted for all rich text, the following tags are permitted for chatbot lines: `table`, `tr`, `td`, `th`, `thead`, `tbody`, `details`, and `summary`.
@@ -64,7 +64,8 @@ defmodule HiveMonitor.BasecampChatHandler do
       {~r/what.do.you.think/i, fn -> sycophant(creator) end}
     ]
 
-    default_response = "That's nice, #{creator} 👍.<br><br>Type <strong>!itbot /help</strong> or <strong>!itbot /commands</strong> to see what I can do."
+    default_response =
+      "That's nice, #{creator} 👍.<br><br>Type <strong>!itbot /help</strong> or <strong>!itbot /commands</strong> to see what I can do."
 
     Enum.reduce(actions, default_response, fn {regex, response_fn}, acc ->
       cond do

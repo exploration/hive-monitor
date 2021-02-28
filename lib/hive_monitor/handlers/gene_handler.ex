@@ -1,4 +1,4 @@
-defmodule HiveMonitor.GeneHandler do
+defmodule HiveMonitor.Handlers.GeneHandler do
   @moduledoc """
   Forward an atom to the Gene app's incoming_atom endpoint.
   """

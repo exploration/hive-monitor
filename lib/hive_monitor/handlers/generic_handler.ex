@@ -1,4 +1,4 @@
-defmodule HiveMonitor.GenericHandler do
+defmodule HiveMonitor.Handlers.GenericHandler do
   @moduledoc """
   The generic case is merely to log the atom
   """

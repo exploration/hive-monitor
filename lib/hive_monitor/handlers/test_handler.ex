@@ -1,4 +1,4 @@
-defmodule HiveMonitor.TestHandler do
+defmodule HiveMonitor.Handlers.TestHandler do
   @moduledoc """
   Utility handler used during testing.
   """

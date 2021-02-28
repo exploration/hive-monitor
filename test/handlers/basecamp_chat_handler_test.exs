@@ -1,6 +1,6 @@
 defmodule BasecampChatHandlerTest do
   use ExUnit.Case, async: true
-  alias HiveMonitor.BasecampChatHandler, as: BCH
+  alias HiveMonitor.Handlers.BasecampChatHandler, as: BCH
 
   describe "chatbot response" do
     test "no matching action" do

@@ -1,4 +1,4 @@
-defmodule HiveMonitor.KitchenHandler do
+defmodule HiveMonitor.Handlers.KitchenHandler do
   @moduledoc """
   Forward an atom to the Kitchen Sync app's incoming_atom endpoint.
   """

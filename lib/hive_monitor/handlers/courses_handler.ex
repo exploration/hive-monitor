@@ -1,4 +1,4 @@
-defmodule HiveMonitor.CoursesHandler do
+defmodule HiveMonitor.Handlers.CoursesHandler do
   @moduledoc """
   Forward an atom to the Courses app's incoming_atom endpoint.
   """
