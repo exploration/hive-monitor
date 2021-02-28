@@ -1,7 +1,7 @@
 defmodule HiveMonitor.Handlers.NotificationHandler do
   @moduledoc """
-  This module is designed to retrieve generic notifications that come from
-  any system. It expects atom.data in the format:
+  This module is designed to retrieve generic notifications that come
+  from any system. It expects atom.data in the format:
 
       {
         message: String (required)
@@ -44,7 +44,10 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
         put_receipt(atom, status_list)
 
       {:error, reason} ->
-        Logger.error(fn -> "Notification JSON error: #{inspect(reason)}" end)
+        Logger.error(fn ->
+          "#{HiveMonitor.application_name()} notification JSON error: #{inspect(reason)}"
+        end)
+
         :error
     end
   end
@@ -57,7 +60,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
     status = parse_status_code(response.status_code)
 
     if status == {:ok, :sent} do
-      Logger.info(fn -> "chat notification(s) sent" end)
+      Logger.info(fn -> "#{HiveMonitor.application_name()} chat notification(s) sent" end)
     end
 
     status
@@ -79,7 +82,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
     status = parse_status_code(response.status_code)
 
     if status == {:ok, :sent} do
-      Logger.info(fn -> "email notification(s) sent" end)
+      Logger.info(fn -> "#{HiveMonitor.application_name()} email notification(s) sent" end)
     end
 
     status
@@ -98,7 +101,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
 
     case Enum.any?(status_list, &({:ok, :sent} == &1)) do
       true ->
-        Logger.info(fn -> "sms notification(s) sent" end)
+        Logger.info(fn -> "#{HiveMonitor.application_name()} sms notification(s) sent" end)
         {:ok, :sent}
 
       false ->

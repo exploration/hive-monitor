@@ -64,7 +64,7 @@ defmodule HiveMonitor.Handlers.PorticoBuffer do
       "#{@server_url}?script=#{URI.encode(@script_name)}" <>
         "&param=#{atom_to_fm_query(atom)}"
 
-    Logger.info(fn -> "Sending atom #{atom.id} to Portico..." end)
+    Logger.info(fn -> "#{HiveMonitor.application_name()} sending atom #{atom.id} to portico" end)
 
     System.cmd("/usr/bin/open", [url])
 
@@ -107,8 +107,8 @@ defmodule HiveMonitor.Handlers.PorticoBuffer do
     state = %State{}
 
     Logger.info(fn ->
-      "Starting PorticoBuffer at a rate of " <>
-        "#{inspect(Float.round(state.rate / 1000))} seconds..."
+      "#{HiveMonitor.application_name()} starting PorticoBuffer at a rate of " <>
+        "#{inspect(Float.round(state.rate / 1000))} seconds"
     end)
 
     send_next_dequeue_message(state)
@@ -162,7 +162,7 @@ defmodule HiveMonitor.Handlers.PorticoBuffer do
   @doc false
   @impl true
   def handle_info(message, state) do
-    Logger.info(fn -> "PorticoBuffer received a message: #{inspect(message)}." end)
+    Logger.info(fn -> "#{HiveMonitor.application_name()} PorticoBuffer received a message: #{inspect(message)}" end)
     {:noreply, state}
   end
 

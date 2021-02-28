@@ -23,16 +23,20 @@ defmodule HiveMonitor do
       config :hive_service,
         hive_api_token: "your token"
 
-  There are a few other possible/semi-optional configuration variables in this
-  system:
+  There are a few other possible/semi-optional configuration variables
+  in this system:
 
       config :hive_monitor,
         application_name: "can_be_customized",
-        router_config: "output of HiveMonitor.Router.get_config()"
         crons: "output of HiveMonitor.CronServer.get_config()",
         # The amount of time within which your initial batch of Crons will get
         # randomly started:
-        cron_init_spread: :timer.minutes(3)
+        cron_init_spread: :timer.minutes(3),
+        # Set this to `true` if you don't want system alerts going out over chat
+        disable_chat_alerts: false,
+        # Set this to `true` if you don't use the PorticoBuffer
+        disable_portico_buffer: false,
+        router_config: "output of HiveMonitor.Router.get_config()"
 
   Check the related modules for more details about how to preconfigure/save
   triplet/module maps and "Cron" jobs.
@@ -45,7 +49,7 @@ defmodule HiveMonitor do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    Logger.info(fn -> "Starting HIVE Monitoring" end)
+    Logger.info(fn -> "#{application_name()} starting HIVE monitoring" end)
     HiveMonitor.Supervisor.start_link()
   end
 

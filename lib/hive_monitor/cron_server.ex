@@ -128,7 +128,7 @@ defmodule HiveMonitor.CronServer do
   """
   def execute_cron(%Cron{} = cron) do
     Logger.info(
-      "CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
+      "#{HiveMonitor.application_name()} CronServer run: #{cron.name} (every #{cron.rate / 1000}s): " <>
         "#{inspect(cron.module)} #{inspect(cron.fun)} #{inspect(cron.args)}"
     )
 
@@ -218,14 +218,20 @@ defmodule HiveMonitor.CronServer do
 
   @doc false
   def handle_info({:EXIT, _pid, reason}, state) do
-    Logger.info(fn -> "Quitting CronServer because: #{inspect(reason)}." end)
+    Logger.info(fn ->
+      "#{HiveMonitor.application_name()} quitting CronServer because: #{inspect(reason)}"
+    end)
+
     Enum.each(state, &cancel_timer/1)
     {:noreply, state}
   end
 
   @doc false
   def handle_info(message, state) do
-    Logger.info(fn -> "CronServer received a message: #{inspect(message)}." end)
+    Logger.info(fn ->
+      "#{HiveMonitor.application_name()} CronServer received a message: #{inspect(message)}"
+    end)
+
     {:noreply, state}
   end
 
@@ -234,15 +240,17 @@ defmodule HiveMonitor.CronServer do
   # ----------------#
 
   # Cancel the Erlang timer for the given Cron (if there is a proper timer
-  # reference)
-  # See http://erlang.org/doc/man/timer.html for details
+  # reference) See http://erlang.org/doc/man/timer.html for details
   defp cancel_timer(cron) do
     case cron.tref do
       nil ->
         {:error, "no timer reference found"}
 
       {:interval, _ref} ->
-        Logger.info(fn -> "Cancelling timer for #{cron.name}" end)
+        Logger.info(fn ->
+          "#{HiveMonitor.application_name()} cancelling timer for #{cron.name}"
+        end)
+
         :timer.cancel(cron.tref)
     end
   end
@@ -266,8 +274,8 @@ defmodule HiveMonitor.CronServer do
     start_time = :rand.uniform(spread)
 
     Logger.info(fn ->
-      "Starting #{inspect(cron.name)}'s timer in " <>
-        "#{inspect(Float.round(start_time / 1000))} seconds."
+      "#{HiveMonitor.application_name()} starting #{inspect(cron.name)} timer in " <>
+        "#{inspect(Float.round(start_time / 1000))} seconds"
     end)
 
     Process.send_after(__MODULE__, {:set_timer, cron}, start_time)
@@ -302,7 +310,8 @@ defmodule HiveMonitor.CronServer do
     case cron.tref do
       nil ->
         Logger.info(fn ->
-          "CronServer activating #{cron.name}" <> " every #{cron.rate / 1000}s"
+          "#{HiveMonitor.application_name()} CronServer activating #{cron.name}" <>
+            " every #{cron.rate / 1000}s"
         end)
 
         {:ok, tref} = :timer.apply_interval(cron.rate, __MODULE__, :execute_cron, [cron])

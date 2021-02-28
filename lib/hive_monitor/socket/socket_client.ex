@@ -24,8 +24,7 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def init(url) do
-    token =
-      Application.get_env(:hive_monitor, :hive_socket_token, "no token")
+    token = Application.get_env(:hive_monitor, :hive_socket_token, "no token")
 
     {:connect, url, [token: token], %{first_join: true}}
   end
@@ -43,19 +42,23 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_connected(transport, state) do
-    Logger.info(fn -> "connected" end)
+    Logger.info(fn -> "#{HiveMonitor.application_name()} connected" end)
     GenSocketClient.join(transport, "atom:create")
     {:ok, state}
   end
 
   @doc false
   def handle_disconnected(reason, state) do
-    Logger.error(fn -> "disconnected: #{inspect(reason)}, #{inspect(state)}" end)
+    Logger.error(fn ->
+      "#{HiveMonitor.application_name()} disconnected: #{inspect(reason)}, #{inspect(state)}"
+    end)
 
-    Chat.send_notification(
-      "WARNING: HIVE Monitor disconnected from HIVE channel.",
-      Application.get_env(:hive_monitor, :default_chat_url)
-    )
+    unless Application.get_env(:hive_monitor, :disable_chat_alerts) do
+      Chat.send_notification(
+        "WARNING (#{HiveMonitor.application_name()}) disconnected from HIVE channel",
+        Application.get_env(:hive_monitor, :default_chat_url)
+      )
+    end
 
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
@@ -63,20 +66,23 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_joined(topic, _payload, _transport, state) do
-    Logger.info(fn -> "joined the topic #{topic}" end)
+    Logger.info(fn -> "#{HiveMonitor.application_name()} joined the topic #{topic}" end)
     {:ok, state}
   end
 
   @doc false
   def handle_join_error(topic, payload, _transport, state) do
-    Logger.error(fn -> "join error on the topic #{topic}: #{inspect(payload)}" end)
+    Logger.error(fn ->
+      "#{HiveMonitor.application_name()} join error on the topic #{topic}: #{inspect(payload)}"
+    end)
+
     {:ok, state}
   end
 
   @doc false
   def handle_channel_closed(topic, payload, _transport, state) do
     Logger.error(fn ->
-      "disconnected from the topic #{topic}: #{inspect(payload)}"
+      "#{HiveMonitor.application_name()} disconnected from the topic #{topic}: #{inspect(payload)}"
     end)
 
     Process.send_after(self(), {:join, topic}, :timer.seconds(1))
@@ -96,7 +102,7 @@ defmodule HiveMonitor.SocketClient do
 
   def handle_message(topic, event, payload, _transport, state) do
     Logger.warn(fn ->
-      "message on topic #{topic}: #{event} #{inspect(payload)}"
+      "#{HiveMonitor.application_name()} message on topic #{topic}: #{event} #{inspect(payload)}"
     end)
 
     {:ok, state}
@@ -104,19 +110,22 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_reply(topic, _ref, payload, _transport, state) do
-    Logger.warn(fn -> "reply on topic #{topic}: #{inspect(payload)}" end)
+    Logger.warn(fn ->
+      "#{HiveMonitor.application_name()} reply on topic #{topic}: #{inspect(payload)}"
+    end)
+
     {:ok, state}
   end
 
   @doc false
   def handle_info(:connect, _transport, state) do
-    Logger.info(fn -> "connecting" end)
+    Logger.info(fn -> "#{HiveMonitor.application_name()} connecting" end)
     {:connect, state}
   end
 
   @doc false
   def handle_info({:join, topic}, transport, state) do
-    Logger.info(fn -> "joining the topic #{topic}" end)
+    Logger.info(fn -> "#{HiveMonitor.application_name()} joining the topic #{topic}" end)
 
     case GenSocketClient.join(transport, topic) do
       {:error, reason} ->
@@ -135,7 +144,10 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_info(message, _transport, state) do
-    Logger.warn(fn -> "Unhandled message #{inspect(message)}" end)
+    Logger.warn(fn ->
+      "#{HiveMonitor.application_name()} unhandled message #{inspect(message)}"
+    end)
+
     {:ok, state}
   end
 

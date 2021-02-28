@@ -10,26 +10,19 @@ defmodule HiveMonitor.HiveSupervisor do
   end
 
   def init(:ok) do
-    Supervisor.init(
-      [
-        # The router takes care of handing incoming atoms from the HIVE
-        # SocketClient
-        HiveMonitor.Router,
+    children = [
+      HiveMonitor.Router,
+      HiveMonitor.CronServer,
+      HiveMonitor.StagnantAtomChecker
+    ]
 
-        # The CronServer handles any system tasks that we want to run on a
-        # periodic schedule.
-        HiveMonitor.CronServer,
+    children =
+      if Application.get_env(:hive_monitor, :disable_portico_buffer) do
+        children
+      else
+        children ++ [HiveMonitor.Handlers.PorticoBuffer]
+      end
 
-        # The PorticoBuffer is an EXPLO-specific GenServer that handles
-        # sending atoms to our Portico system at a rate it can handle.
-        HiveMonitor.Handlers.PorticoBuffer,
-
-        # The StagnantAtomChecker keeps a list of any atoms that remain
-        # in the `Router.handle_missed_atoms()` queue from one call
-        # to the next.
-        HiveMonitor.StagnantAtomChecker
-      ],
-      strategy: :one_for_one
-    )
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
