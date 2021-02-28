@@ -11,8 +11,20 @@ config :logger, :console,
 
 config :phoenix, :json_library, Jason
 
-# If you have any "Cron" (periodically-run) tasks that you need HiveMonitor to
-# manage, you can set them up here.
+# In case you want to run the monitor directly, and not embedded, you can un-comment this HIVE setup stuff:
+#config :hive_monitor,
+  #application_name: "can_be_customized",
+  #hive_socket_token: "your token",
+  #default_chat_url: "https://chat.googleapis.com/somethin"
+  #router_config: "output of HiveMonitor.Router.get_config()"
+  #crons: "output of HiveMonitor.CronServer.get_config()",
+  #cron_init_spread: :timer.minutes(3)
+#config :hive_service,
+  #hive_api_token: "your token"
+
+# If you have any "Cron" (periodically-run) tasks that you need
+# HiveMonitor to manage, you can set them up here.
+#
 # For a CRON to work, you need:
 #   :name, :cmd, :args [list], :rate (in ms)
 config :hive_monitor,
@@ -40,14 +52,15 @@ config :hive_monitor,
     # }
   ]
 
-# The default configuration of the HIVE monitor is to run as a "server" to
-# handle realtime inputs between Explo's various web systems (Portico, Portal,
-# etc.). If you're using the HIVE monitor in other environments, you'll want to
-# configure your handlers here.
+# The default configuration of the HIVE monitor is to run as a
+# "server" to handle realtime inputs between Explo's various web
+# systems (Portico, Portal, etc.). If you're using the HIVE monitor
+# in other environments, you'll want to configure your handlers
+# here.
 config :hive_monitor,
   router_config:
     %{
-      # {"courses_production", "version", "approved"} => [HiveMonitor.Handlers.PorticoBuffer],
+      # {"explo", "notification", "create"} => [HiveMonitor.Handlers.NotificationHandler],
     }
 
 # Import environment specific config. This must remain at the bottom
