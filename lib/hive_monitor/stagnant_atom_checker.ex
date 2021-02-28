@@ -1,6 +1,10 @@
 defmodule HiveMonitor.StagnantAtomChecker do
   @moduledoc """
-  The Stagnant Atom Checker exists because sometimes systems that receive HIVE atoms fail to parse them properly + mark them as "received". This means that subsequent calls `Handler.handle_missed_atoms()` will end up returning the same set of... stagnant... atoms. So we want to be able to tell that this is happening + get a warning about it!
+  Alert via chat when atoms aren't getting received when routed
+
+  The Stagnant Atom Checker exists because sometimes systems that receive HIVE atoms fail to parse them properly + mark them as "received". This means that subsequent calls `HiveMonitor.Router.handle_missed_atoms/0` will end up returning the same set of... stagnant... atoms. So we want to be able to tell that this is happening + get a warning about it!
+
+  Each time that `HiveMonitor.Router.handle_missed_atoms/0` is run, we keep track of the atoms that were missed. If those atoms are the same between multiple runs, then they are "stagnant".
   """
 
   use GenServer
@@ -10,7 +14,7 @@ defmodule HiveMonitor.StagnantAtomChecker do
   alias ExploComm.Chat
 
   @typedoc """
-  A `StagnantAtomChecker` holds two sets of Atoms: the previous run, and the current run, of `Handler.handle_missed_atom()`.
+  The stagnant atom checker holds two sets of Atoms: the previous run, and the current run, of `HiveMonitor.Router.handle_missed_atom()`.
   """
   @type state :: %{current: MapSet.t(), previous: MapSet.t()}
 
@@ -25,7 +29,9 @@ defmodule HiveMonitor.StagnantAtomChecker do
   end
 
   @doc """
-  Add an atom to the "current" list of atoms. If it's already in the list, it'll be ignored.
+  Add an atom to the "current" list of atoms. 
+
+  If it's already in the list, it'll be ignored.
   """
   @spec append_atom_list([HiveAtom.t()]) :: state()
   def append_atom_list(atom_list) do
@@ -33,7 +39,8 @@ defmodule HiveMonitor.StagnantAtomChecker do
   end
 
   @doc """
-  Returns a list of atoms that remained in the list between the last "run" and the current "run".
+  Returns a list of atoms that remained in the list between the last "run" and
+  the current "run".
   """
   @spec get_stagnant_atoms() :: state()
   def get_stagnant_atoms do
