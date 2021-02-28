@@ -1,12 +1,13 @@
 defmodule HiveMonitor.Router do
   @moduledoc """
-  The HiveMonitor Router is a service designed to map incoming HIVE atoms to
-  handler modules. It keeps a state of the atom "triplets", which identify the
-  system from which the atom came, and which modules correspond to those
-  triplets.
+  Map incoming HIVE atoms to handler modules. 
 
-  The state can be configured on-the-fly through the `add_handler`,
-  `remove_handler`, and `get_config` calls, or it can be set in the
+  The router keeps a state of the atom "triplets", which identify
+  the system from which the atom came, and which modules correspond
+  to those triplets.
+
+  The state can be configured on-the-fly through the `add_handler/2`,
+  `remove_handler/2`, and `get_config/0` calls, or it can be set in the
   `:hive_monitor, :router_config` configuration variable.
   """
 
@@ -14,14 +15,15 @@ defmodule HiveMonitor.Router do
 
   require Logger
 
-  alias HiveMonitor.GenericHandler
+  alias HiveMonitor.StagnantAtomChecker
+  alias HiveMonitor.Handlers.GenericHandler
 
   @typedoc "Just a unique list of module names."
   @type module_list :: [module()]
 
   @typedoc """
   A `config` in the context of a `HiveMonitor.Router` is a HIVE triplet, mapped
-  to a list of modules that implement the `Handler` behavior, which can
+  to a list of modules that implement the `HiveMonitor.Handler` behavior, which can
   receive a HIVE atom when one is routed in. 
   """
   @type config :: %{HiveAtom.triplet() => module_list}
@@ -41,14 +43,13 @@ defmodule HiveMonitor.Router do
   @doc """
   Add a new handler to the HIVEMonitor system on-the-fly.
 
-  Returns the current `Router` config.
+  Returns the current `HiveMonitor.Router` config.
 
   ## Example:
 
-      iex> HiveMonitor.Router.add_handler({"portico","user","update"}, HiveMonitor.GenericHandler)
-      %{{"explo", "notification", "create"} => [HiveMonitor.NotificationHandler],
-        {"portico", "user", "update"} => [HiveMonitor.GenericHandler]}
-        i
+      iex> HiveMonitor.Router.add_handler({"portico","user","update"}, HiveMonitor.Handlers.GenericHandler)
+      %{{"basecamp", "chat", "create"} => [HiveMonitor.Handlers.BasecampChatHandler],
+        {"portico", "user", "update"} => [HiveMonitor.Handlers.GenericHandler]}
   """
   @spec add_handler(HiveAtom.triplet(), module()) :: config()
   def add_handler(triplet, handler) do
@@ -57,7 +58,7 @@ defmodule HiveMonitor.Router do
 
   @doc """
   Returns all known triplets, along with the list of any handlers associated
-  with each triplet, as a `Router.config()` type.
+  with each triplet, as a `HiveMonitor.Router.config()` type.
 
   The output of this function can be copy/pasted into the config variable
   `:hive_monitor, :router_config`, which is handy for when you've made
@@ -70,16 +71,40 @@ defmodule HiveMonitor.Router do
   end
 
   @doc """
+  Query HIVE for any atoms we should be handling that didn't get received.
+
+  Returns a list of the return statuses of each atom routing attempt.
+  """
+  @spec handle_missed_atoms() :: [any()]
+  def handle_missed_atoms do
+    status_list =
+      for {triplet, handler_list} <- get_config(),
+          handler <- handler_list do
+        receiving_app = apply(handler, :application_name, [])
+        atom_list = HiveService.get_unseen_atoms(receiving_app, triplet)
+
+        StagnantAtomChecker.append_atom_list(atom_list)
+        log_missed_atoms(atom_list, triplet, receiving_app)
+        route_atom_list(atom_list)
+      end
+
+    StagnantAtomChecker.notify_if_stagnant()
+    StagnantAtomChecker.reset_current()
+
+    status_list
+  end
+
+  @doc """
   Stop handling the given triplet with the given handler. If the given triplet
   no longer has any handlers associated with it, the triplet will be removed
   entirely from the config.
 
-  Returns the current `Router` config.
+  Returns the current `HiveMonitor.Router` config.
 
   ## Example:
 
       iex> HiveMonitor.Router.remove_handler( \
-          {"portico","user","update"}, HiveMonitor.GenericHandler)
+          {"portico","user","update"}, HiveMonitor.Handlers.GenericHandler)
       %{{"portico","user","update"} => [SomeOtherHandler]}
       iex> HiveMonitor.Router.remove_handler( \
           {"portico","user","update"}, SomeOtherHandler)
@@ -209,6 +234,19 @@ defmodule HiveMonitor.Router do
     end)
 
     Task.async(module, :handle_atom, [atom])
+  end
+
+  defp log_missed_atoms(atom_list, triplet, receiving_app) do
+    Logger.info(fn ->
+      "handling #{Enum.count(atom_list)} missed atoms from " <>
+        "#{inspect(triplet)} for #{receiving_app}"
+    end)
+  end
+
+  defp route_atom_list(atom_list) do
+    Enum.each(atom_list, fn atom ->
+      atom |> Map.from_struct() |> route()
+    end)
   end
 
   # Attempt to asynchronously route the atom to all known handlers. If no known handlers exist, route to the GenericHandler.
