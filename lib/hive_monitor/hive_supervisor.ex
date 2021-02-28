@@ -22,7 +22,7 @@ defmodule HiveMonitor.HiveSupervisor do
 
         # The PorticoBuffer is an EXPLO-specific GenServer that handles
         # sending atoms to our Portico system at a rate it can handle.
-        HiveMonitor.PorticoBuffer,
+        HiveMonitor.Handlers.PorticoBuffer,
 
         # The StagnantAtomChecker keeps a list of any atoms that remain
         # in the `Router.handle_missed_atoms()` queue from one call
