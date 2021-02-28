@@ -146,7 +146,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
       key = Atom.to_string(key)
 
       case {key, Map.get(data, key)} do
-        {:chat, true} ->
+        {"chat", true} ->
           apply(__MODULE__, function, [data])
 
         _ ->
