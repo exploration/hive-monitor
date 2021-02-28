@@ -12,7 +12,7 @@ defmodule HiveMonitor.Handler do
 
   @doc """
   Set the application name that corresponds to each handler. 
-  
+
   For example, `GeneHandler` might have the application name of `gene` -
   that is, each HiveAtom originating from the GENE system would have
   `application: "gene"`. 
@@ -28,7 +28,7 @@ defmodule HiveMonitor.Handler do
 
   @doc """
   Convert an atom to an encoded URL form, typically for POSTs to REST apis.
-  
+
   We have this function here to be accessible to all handlers (sort of like
   inheritance, get it?)
   """
