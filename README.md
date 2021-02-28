@@ -9,24 +9,19 @@ The application can also run local scripts or Elixir functions periodically, in
 a similar way to cron, which makes it easier to keep all synchronization in one
 area. See `CronServer` for details of how to set that up.
 
-
 # Setup
 
-You'll probably want to update `config/config.exs` with some API token
-variables:
+You'll want to update `config/config.exs` in your app/deployment with some API
+token variables:
 
+    # Monitor-specific setup
     config :hive_monitor,
-      hive_socket_token: "your token"
-
-    config :explo,
-      hive_api_token: "your token",
-      stride_api_token: "your token",
-      stride_api_url: "your room URL",
-      mandrill_api_key: "your key"
-      twilio_api_token: "your token"
-
-These can also be set as environment variables in ALL_CAPS (eg
-`HIVE_SOCKET_TOKEN` etc.).
+      hive_socket_token: "your token",
+      default_chat_url: "https://chat.googleapis.com/somethin"
+      
+    # We also need to configure HIVE service, natch.
+    config :hive_service,
+      hive_api_token: "your token"
 
 There are a few other possible/semi-optional configuration variables in this
 system:
@@ -44,4 +39,5 @@ triplet/module maps and "Cron" jobs.
 
 # Documentation
 
-To generate browser-readable documentation for this project, you can type `mix docs`, and then `open doc/index.html`.
+To generate browser-readable documentation for this project, you can type `mix
+docs`, and then `open doc/index.html`.
