@@ -1,7 +1,6 @@
 defmodule HiveMonitor.SocketClient do
   @moduledoc """
-  The SocketClient's job is to monitor a socket connection from the main HIVE
-  server, and forward atoms along as they come through in real time.
+  Forward atoms in real time from the HIVE server.
 
   Most of the functions in here are boilerplate. The one that handles the call
   to `atom:create` is where most of the magic happens in this piece.
@@ -17,12 +16,11 @@ defmodule HiveMonitor.SocketClient do
   @doc false
   def start_link do
     token =
-      System.get_env("HIVE_SOCKET_TOKEN") ||
-        Application.get_env(:hive_monitor, :hive_socket_token) || "no key"
+      Application.get_env(:hive_monitor, :hive_socket_token) ||
+        "no key"
+        |> URI.encode()
 
-    token = URI.encode(token)
-
-    url = System.get_env("HIVE_API_URL") || "wss://hive.explo.org"
+    url = "wss://hive.explo.org"
 
     GenSocketClient.start_link(
       __MODULE__,
@@ -90,16 +88,16 @@ defmodule HiveMonitor.SocketClient do
   end
 
   @doc """
-  This callback is the one that matters: When an `atom:create` message is
-  received from HIVE, this module will send it to the `:route` function of the
-  `HiveMonitor.Router` module.
+  This callback is the one that matters.
+
+  When an `atom:create` message is received from HIVE, this module
+  will send it to `HiveMonitor.Router.route/1`.
   """
   def handle_message("atom:create", "created", payload, _transport, state) do
     route(payload)
     {:ok, state}
   end
 
-  @doc false
   def handle_message(topic, event, payload, _transport, state) do
     Logger.warn(fn ->
       "message on topic #{topic}: #{event} #{inspect(payload)}"
