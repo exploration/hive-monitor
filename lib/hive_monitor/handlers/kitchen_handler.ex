@@ -6,7 +6,6 @@ defmodule HiveMonitor.Handlers.KitchenHandler do
   alias HiveMonitor.Handler
   @behaviour Handler
 
-  @token "a24424edddde6ed1a54da081b89499469adf2011949397a6"
   @url "https://kitchen.explo.org/hive/incoming_atoms"
 
   @doc false
@@ -18,7 +17,7 @@ defmodule HiveMonitor.Handlers.KitchenHandler do
   def handle_atom(%HiveAtom{} = atom) do
     atom_encoded = Handler.atom_to_uri_form(atom)
 
-    body = "atom=#{atom_encoded}&token=#{@token}"
+    body = "atom=#{atom_encoded}&token=#{Application.get_env(:hive_monitor, :token_kitchen)}"
 
     headers = [
       {"User-Agent", "HIVE Monitor"},

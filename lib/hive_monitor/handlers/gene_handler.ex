@@ -6,7 +6,6 @@ defmodule HiveMonitor.Handlers.GeneHandler do
   alias HiveMonitor.Handler
   @behaviour Handler
 
-  @token "3a9555043bea1ff8892914b8deceb0fd523243d0b"
   @url "https://portal.explo.org/hive/incoming_atoms"
 
   @doc false
@@ -18,7 +17,7 @@ defmodule HiveMonitor.Handlers.GeneHandler do
   def handle_atom(%HiveAtom{} = atom) do
     atom_encoded = Handler.atom_to_uri_form(atom)
 
-    body = "atom=#{atom_encoded}&token=#{@token}"
+    body = "atom=#{atom_encoded}&token=#{Application.get_env(:hive_monitor, :token_gene)}"
 
     headers = [
       {"User-Agent", "HIVE Monitor"},

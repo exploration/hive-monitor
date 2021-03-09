@@ -45,8 +45,12 @@ config :hive_monitor,
   #hive_socket_token: "your token",
   router_config: %{
       # {"explo", "notification", "create"} => [HiveMonitor.Handlers.NotificationHandler],
-    }
-
+  }
+  # Set these if you're using these respective handlers
+  #token_courses: "",
+  #token_gene: "",
+  #token_kitchen: ""
+  
 #config :hive_service,
 #  hive_api_token: "your token"
 
