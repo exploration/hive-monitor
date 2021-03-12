@@ -43,6 +43,7 @@ config :hive_monitor,
   #disable_chat_alerts: true,
   #disable_portico_buffer: true,
   #hive_socket_token: "your token",
+  log_unrecognized_atoms: true,
   router_config: %{
       # {"explo", "notification", "create"} => [HiveMonitor.Handlers.NotificationHandler],
   }

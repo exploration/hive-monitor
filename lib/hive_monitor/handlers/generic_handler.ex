@@ -1,6 +1,11 @@
 defmodule HiveMonitor.Handlers.GenericHandler do
   @moduledoc """
   The generic case is merely to log the atom
+
+  You can stop this logging in `config.exs`:
+
+      config :hive_monitor,
+        log_unrecognized_atoms: false
   """
 
   @behaviour HiveMonitor.Handler
@@ -14,11 +19,13 @@ defmodule HiveMonitor.Handlers.GenericHandler do
   @doc false
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
-    message =
-      "Generic Handler got the atom: (#{atom.application}" <>
-        ", #{atom.context}, #{atom.process}) data: #{inspect(atom.data)}"
+    if Application.get_env(:hive_monitor, :log_unrecognized_atoms, false) do
+      message =
+        "Generic Handler got the atom: (#{atom.application}" <>
+          ", #{atom.context}, #{atom.process}) data: #{inspect(atom.data)}"
 
-    Logger.info(fn -> message end)
+      Logger.info(fn -> message end)
+    end
 
     {:ok, :success}
   end

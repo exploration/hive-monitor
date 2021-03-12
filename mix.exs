@@ -6,7 +6,7 @@ defmodule HiveMonitor.Mixfile do
       app: :hive_monitor,
       name: "HIVE Monitor",
       source_url: "https://bitbucket.org/explo/hive-monitor",
-      version: "1.0.2",
+      version: "1.0.3",
       elixir: "~> 1.11",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: Mix.compilers(),
@@ -46,7 +46,6 @@ defmodule HiveMonitor.Mixfile do
       {:faker, "~> 0.16"},
       {:hive_service, git: "git@bitbucket.org:explo/hive-service.git"},
       {:httpoison, "~> 1.6"},
-      {:logger_file_backend, "~> 0.0.10"},
       {:phoenix, "~> 1.3"},
       {:phoenix_gen_socket_client, "~> 4.0.0"},
       # Required by gen_socket_client to be explicitly invoked:
