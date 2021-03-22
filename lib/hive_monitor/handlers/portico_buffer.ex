@@ -162,7 +162,10 @@ defmodule HiveMonitor.Handlers.PorticoBuffer do
   @doc false
   @impl true
   def handle_info(message, state) do
-    Logger.info(fn -> "#{HiveMonitor.application_name()} PorticoBuffer received a message: #{inspect(message)}" end)
+    Logger.info(fn ->
+      "#{HiveMonitor.application_name()} PorticoBuffer received a message: #{inspect(message)}"
+    end)
+
     {:noreply, state}
   end
 

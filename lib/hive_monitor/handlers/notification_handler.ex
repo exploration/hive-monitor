@@ -26,22 +26,19 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
   def application_name, do: HiveMonitor.application_name()
 
   @doc """
-  Inspect the atom for information about what types of notifications to send,
-  then route to the appropriate system (SMS, Email, Chat).
+  Inspect the atom for information about what types of notifications
+  to send, then route to the appropriate system (SMS, Email, Chat).
   """
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
     case Jason.decode(atom.data) do
       {:ok, data} ->
-        status_list =
-          run_if_not_empty(
-            data,
-            chat: :send_chat_notifications,
-            sms_numbers: :send_sms_notifications,
-            emails: :send_email_notifications
-          )
-
-        put_receipt(atom, status_list)
+        run_if_not_empty(
+          data,
+          chat: :send_chat_notifications,
+          sms_numbers: :send_sms_notifications,
+          emails: :send_email_notifications
+        )
 
       {:error, reason} ->
         Logger.error(fn ->
@@ -50,6 +47,10 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
 
         :error
     end
+
+    HiveService.delete_atom(atom)
+
+    true
   end
 
   @doc false
@@ -113,29 +114,6 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
     case status_code >= 200 && status_code < 300 do
       true -> {:ok, :sent}
       false -> {:error, :send_notification}
-    end
-  end
-
-  defp put_receipt(atom, status_list) do
-    with notifications_went_through? <-
-           Enum.any?(status_list, fn {status, _} -> status == :ok end),
-         no_valid_statuses? <-
-           Enum.all?(
-             status_list,
-             fn stat -> stat == {:error, :empty_recipients} end
-           ),
-         put_receipt? <-
-           is_integer(atom.id) &&
-             (no_valid_statuses? ||
-                notifications_went_through?) do
-      case put_receipt? do
-        true ->
-          HiveService.put_receipt(atom.id, HiveMonitor.application_name())
-          {:ok, :success}
-
-        false ->
-          :error
-      end
     end
   end
 

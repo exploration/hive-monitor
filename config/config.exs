@@ -14,7 +14,7 @@ config :phoenix, :json_library, Jason
 # In case you want to run the monitor directly, and not embedded, you can
 # un-comment this HIVE setup stuff:
 config :hive_monitor,
-  #application_name: "can_be_customized",
+  # application_name: "can_be_customized",
   crons: [
     %{
       name: "handle_missed_atoms",
@@ -38,21 +38,23 @@ config :hive_monitor,
     #   rate: :timer.minutes(1)
     # }
   ],
-  #cron_init_spread: :timer.minutes(3)
-  #default_chat_url: "https://chat.googleapis.com/somethin"
-  #disable_chat_alerts: true,
-  #disable_portico_buffer: true,
-  #hive_socket_token: "your token",
+  # cron_init_spread: :timer.minutes(3)
+  # default_chat_url: "https://chat.googleapis.com/somethin"
+  # disable_chat_alerts: true,
+  # disable_portico_buffer: true,
+  # hive_socket_token: "your token",
   log_unrecognized_atoms: true,
-  router_config: %{
+  router_config:
+    %{
       # {"explo", "notification", "create"} => [HiveMonitor.Handlers.NotificationHandler],
-  }
-  # Set these if you're using these respective handlers
-  #token_courses: "",
-  #token_gene: "",
-  #token_kitchen: ""
-  
-#config :hive_service,
+    }
+
+# Set these if you're using these respective handlers
+# token_courses: "",
+# token_gene: "",
+# token_kitchen: ""
+
+# config :hive_service,
 #  hive_api_token: "your token"
 
 # Import environment specific config. This must remain at the bottom
