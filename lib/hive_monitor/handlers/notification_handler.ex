@@ -48,7 +48,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
         :error
     end
 
-    HiveService.delete_atom(atom)
+    HiveService.delete_atom(atom.id)
 
     true
   end
@@ -69,13 +69,10 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
 
   @doc false
   def send_email_notifications(data) do
-    message = data["message"]
-    email_list = data["emails"]
-
     {:ok, response} =
       Mandrill.send_email(
-        message,
-        email_list,
+        data["message"],
+        data["emails"],
         from: data["from"],
         subject: data["subject"]
       )
