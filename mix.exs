@@ -44,7 +44,7 @@ defmodule HiveMonitor.Mixfile do
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:explo_comm, git: "git@bitbucket.org:explo/explo-comm.git"},
       {:faker, "~> 0.16"},
-      {:hive_service, git: "git@bitbucket.org:explo/hive-service.git"},
+      {:hive_service, git: "git@github.com:exploration/hive-service.git"},
       {:httpoison, "~> 1.6"},
       {:phoenix, "~> 1.3"},
       {:phoenix_gen_socket_client, "~> 4.0.0"},
