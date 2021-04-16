@@ -44,6 +44,7 @@ defmodule HiveMonitor.SocketClient do
   def handle_connected(transport, state) do
     Logger.info(fn -> "#{HiveMonitor.application_name()} connected" end)
     GenSocketClient.join(transport, "atom:create")
+    Process.send_after(self(), :heartbeat, :timer.seconds(1))
     {:ok, state}
   end
 
@@ -65,9 +66,12 @@ defmodule HiveMonitor.SocketClient do
   end
 
   @doc false
-  def handle_joined(topic, _payload, _transport, state) do
+  def handle_joined("atom:create" = topic, _payload, _transport, state) do
     Logger.info(fn -> "#{HiveMonitor.application_name()} joined the topic #{topic}" end)
-    Process.send_after(self(), :heartbeat, :timer.seconds(1))
+    {:ok, state}
+  end
+
+  def handle_joined(_topic, _payload, _transport, state) do
     {:ok, state}
   end
 
@@ -127,7 +131,7 @@ defmodule HiveMonitor.SocketClient do
   def handle_info(:heartbeat, transport, state) do
     #Logger.debug(fn -> "heartbeat" end)
     GenSocketClient.push(transport, "phoenix", "heartbeat", %{})
-    Process.send_after(self(), :heartbeat, :timer.seconds(60))
+    Process.send_after(self(), :heartbeat, :timer.seconds(5))
     {:ok, state}
   end
 
