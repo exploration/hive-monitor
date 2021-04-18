@@ -34,8 +34,6 @@ in this system:
       # The amount of time within which your initial batch of Crons will get
       # randomly started:
       cron_init_spread: :timer.minutes(3),
-      # Set this to `true` if you don't want system alerts going out over chat
-      disable_chat_alerts: false,
       # Set this to `true` if you don't use the PorticoBuffer
       disable_portico_buffer: false,
       router_config: "output of HiveMonitor.Router.get_config()"

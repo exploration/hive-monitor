@@ -6,7 +6,6 @@ defmodule HiveMonitor.SocketClient do
   to `atom:create` is where most of the magic happens in this piece.
   """
 
-  alias ExploComm.Chat
   alias Phoenix.Channels.GenSocketClient
   @behaviour GenSocketClient
 
@@ -44,7 +43,6 @@ defmodule HiveMonitor.SocketClient do
   def handle_connected(transport, state) do
     Logger.info(fn -> "#{HiveMonitor.application_name()} connected" end)
     GenSocketClient.join(transport, "atom:create")
-    Process.send_after(self(), :heartbeat, :timer.seconds(1))
     {:ok, state}
   end
 
@@ -54,24 +52,13 @@ defmodule HiveMonitor.SocketClient do
       "#{HiveMonitor.application_name()} disconnected: #{inspect(reason)}, #{inspect(state)}"
     end)
 
-    unless Application.get_env(:hive_monitor, :disable_chat_alerts) do
-      Chat.send_notification(
-        "WARNING (#{HiveMonitor.application_name()}) disconnected from HIVE channel",
-        Application.get_env(:hive_monitor, :default_chat_url)
-      )
-    end
-
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
   end
 
   @doc false
-  def handle_joined("atom:create" = topic, _payload, _transport, state) do
+  def handle_joined(topic, _payload, _transport, state) do
     Logger.info(fn -> "#{HiveMonitor.application_name()} joined the topic #{topic}" end)
-    {:ok, state}
-  end
-
-  def handle_joined(_topic, _payload, _transport, state) do
     {:ok, state}
   end
 
@@ -126,13 +113,6 @@ defmodule HiveMonitor.SocketClient do
   def handle_info(:connect, _transport, state) do
     Logger.info(fn -> "#{HiveMonitor.application_name()} connecting" end)
     {:connect, state}
-  end
-
-  def handle_info(:heartbeat, transport, state) do
-    #Logger.debug(fn -> "heartbeat" end)
-    GenSocketClient.push(transport, "phoenix", "heartbeat", %{})
-    Process.send_after(self(), :heartbeat, :timer.seconds(5))
-    {:ok, state}
   end
 
   @doc false

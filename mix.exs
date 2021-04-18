@@ -47,7 +47,7 @@ defmodule HiveMonitor.Mixfile do
       {:hive_service, git: "git@github.com:exploration/hive-service.git"},
       {:httpoison, "~> 1.6"},
       {:phoenix, "~> 1.3"},
-      {:phoenix_gen_socket_client, git: "git@github.com:exploration/phoenix_gen_socket_client"},
+      {:phoenix_gen_socket_client, "~> 4.0.0"},
       # Required by gen_socket_client to be explicitly invoked:
       {:websocket_client, "~> 1.2"},
       {:jason, "~> 1.2"}
