@@ -41,7 +41,9 @@ defmodule HiveMonitor.Mixfile do
     [
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.22", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.22", only: [:dev], runtime: false},
+      {:logger_papertrail_backend, "~> 1.1", only: [:dev]},
+
       {:explo_comm, git: "git@github.com:exploration/explo-comm.git"},
       {:faker, "~> 0.16"},
       {:hive_service, git: "git@github.com:exploration/hive-service.git"},
