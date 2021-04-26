@@ -14,11 +14,13 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def start_link do
-    GenSocketClient.start_link(
-      __MODULE__,
-      Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-      "wss://hive.explo.org/socket/websocket"
-    )
+    unless Mix.env() == :test do
+      GenSocketClient.start_link(
+        __MODULE__,
+        Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
+        "wss://hive.explo.org/socket/websocket"
+      )
+    end
   end
 
   @doc false
