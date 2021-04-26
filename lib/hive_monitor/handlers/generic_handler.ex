@@ -48,6 +48,6 @@ defmodule HiveMonitor.Handlers.GenericHandler do
   end
 
   defp we_are_logging_this(atom) do
-    log_unrecognized_atoms() and HiveAtom.triplet(atom) not in triplets_of_ignoreville() 
+    log_unrecognized_atoms() and HiveAtom.triplet(atom) not in triplets_of_ignoreville()
   end
 end

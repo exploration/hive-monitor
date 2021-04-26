@@ -14,13 +14,11 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def start_link do
-    unless Mix.env() == :test do
-      GenSocketClient.start_link(
-        __MODULE__,
-        Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
-        "wss://hive.explo.org/socket/websocket"
-      )
-    end
+    GenSocketClient.start_link(
+      __MODULE__,
+      Phoenix.Channels.GenSocketClient.Transport.WebSocketClient,
+      "wss://hive.explo.org/socket/websocket"
+    )
   end
 
   @doc false
@@ -43,16 +41,17 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_connected(transport, state) do
-    Logger.info(fn -> "#{HiveMonitor.application_name()} connected" end)
+    log(:info, "#{HiveMonitor.application_name()} connected")
     GenSocketClient.join(transport, "atom:create")
     {:ok, state}
   end
 
   @doc false
   def handle_disconnected(reason, state) do
-    Logger.error(fn ->
+    log(
+      :error,
       "#{HiveMonitor.application_name()} disconnected: #{inspect(reason)}, #{inspect(state)}"
-    end)
+    )
 
     Process.send_after(self(), :connect, :timer.seconds(1))
     {:ok, state}
@@ -60,24 +59,27 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_joined(topic, _payload, _transport, state) do
-    Logger.info(fn -> "#{HiveMonitor.application_name()} joined the topic #{topic}" end)
+    log(:info, "#{HiveMonitor.application_name()} joined the topic #{topic}")
+
     {:ok, state}
   end
 
   @doc false
   def handle_join_error(topic, payload, _transport, state) do
-    Logger.error(fn ->
+    log(
+      :error,
       "#{HiveMonitor.application_name()} join error on the topic #{topic}: #{inspect(payload)}"
-    end)
+    )
 
     {:ok, state}
   end
 
   @doc false
   def handle_channel_closed(topic, payload, _transport, state) do
-    Logger.error(fn ->
+    log(
+      :error,
       "#{HiveMonitor.application_name()} disconnected from the topic #{topic}: #{inspect(payload)}"
-    end)
+    )
 
     Process.send_after(self(), {:join, topic}, :timer.seconds(1))
     {:ok, state}
@@ -95,37 +97,35 @@ defmodule HiveMonitor.SocketClient do
   end
 
   def handle_message(topic, event, payload, _transport, state) do
-    Logger.warn(fn ->
+    log(
+      :warn,
       "#{HiveMonitor.application_name()} message on topic #{topic}: #{event} #{inspect(payload)}"
-    end)
+    )
 
     {:ok, state}
   end
 
   @doc false
   def handle_reply(topic, _ref, payload, _transport, state) do
-    Logger.warn(fn ->
-      "#{HiveMonitor.application_name()} reply on topic #{topic}: #{inspect(payload)}"
-    end)
+    log(:warn, "#{HiveMonitor.application_name()} reply on topic #{topic}: #{inspect(payload)}")
 
     {:ok, state}
   end
 
   @doc false
   def handle_info(:connect, _transport, state) do
-    Logger.info(fn -> "#{HiveMonitor.application_name()} connecting" end)
+    log(:info, "#{HiveMonitor.application_name()} connecting")
+
     {:connect, state}
   end
 
   @doc false
   def handle_info({:join, topic}, transport, state) do
-    Logger.info(fn -> "#{HiveMonitor.application_name()} joining the topic #{topic}" end)
+    log(:info, "#{HiveMonitor.application_name()} joining the topic #{topic}")
 
     case GenSocketClient.join(transport, topic) do
       {:error, reason} ->
-        Logger.error(fn ->
-          "error joining the topic #{topic}: #{inspect(reason)}"
-        end)
+        log(:error, "error joining the topic #{topic}: #{inspect(reason)}")
 
         Process.send_after(self(), {:join, topic}, :timer.seconds(1))
 
@@ -138,9 +138,7 @@ defmodule HiveMonitor.SocketClient do
 
   @doc false
   def handle_info(message, _transport, state) do
-    Logger.warn(fn ->
-      "#{HiveMonitor.application_name()} unhandled message #{inspect(message)}"
-    end)
+    log(:warn, "#{HiveMonitor.application_name()} unhandled message #{inspect(message)}")
 
     {:ok, state}
   end
@@ -148,5 +146,17 @@ defmodule HiveMonitor.SocketClient do
   @doc false
   def handle_call(_msg, _from, _transport, state) do
     {:noreply, state}
+  end
+
+  defp log(:error, message) do
+    unless Mix.env() == :test, do: Logger.error(message)
+  end
+
+  defp log(:info, message) do
+    unless Mix.env() == :test, do: Logger.info(message)
+  end
+
+  defp log(:warn, message) do
+    unless Mix.env() == :test, do: Logger.warn(message)
   end
 end
