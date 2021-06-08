@@ -80,7 +80,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
     status = parse_status_code(response.status_code)
 
     if status == {:ok, :sent} do
-      Logger.info(fn -> "#{HiveMonitor.application_name()} email notification(s) sent" end)
+      Logger.info(fn -> "#{HiveMonitor.application_name()} email notification(s) sent to #{inspect data["emails"]}" end)
     end
 
     status
@@ -99,7 +99,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
 
     case Enum.any?(status_list, &({:ok, :sent} == &1)) do
       true ->
-        Logger.info(fn -> "#{HiveMonitor.application_name()} sms notification(s) sent" end)
+        Logger.info(fn -> "#{HiveMonitor.application_name()} sms notification(s) sent to #{inspect number_list}" end)
         {:ok, :sent}
 
       false ->
