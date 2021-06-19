@@ -12,6 +12,8 @@ defmodule HiveMonitor.Handlers.LdapHandler do
   You'll also need to configure `HiveMonitor.Crypto` properly
   """
 
+  require Logger
+
   alias HiveMonitor.{Crypto, Handler}
 
   @behaviour Handler
@@ -24,10 +26,13 @@ defmodule HiveMonitor.Handlers.LdapHandler do
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
     %{"email" => email, "encrypted_password" => encrypted_password} = HiveAtom.data_map(atom)
-
     password = Crypto.decrypt(encrypted_password)
 
-    dscl(["passwd", "Users/#{user.record_name}", password])
+    Logger.info("attempting password reset for #{email}")
+    dscl(["passwd", "Users/#{account_name(email)}", password])
+
+    # never keep these atoms around
+    HiveService.delete_atom(atom.id)
   end
 
   defp account_name(email) do
