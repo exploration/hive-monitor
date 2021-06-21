@@ -24,12 +24,21 @@ defmodule HiveMonitor.Handlers.LdapHandler do
 
   @doc false
   @impl true
-  def handle_atom(%HiveAtom{} = atom) do
+  def handle_atom(%HiveAtom{application: "z", context: "staff", process: "password_reset"} = atom) do
     %{"email" => email, "encrypted_password" => encrypted_password} = HiveAtom.data_map(atom)
     password = Crypto.decrypt(encrypted_password)
 
     Logger.info("attempting password reset for #{email}")
     dscl(["passwd", "Users/#{account_name(email)}", password])
+
+    # never keep these atoms around
+    HiveService.delete_atom(atom.id)
+  end
+
+  def handle_atom(%HiveAtom{application: "z", context: "staff", process: "sync_ldap"} = atom) do
+
+    Logger.info("Synchrozing LDAP servers...")
+    System.cmd("sh", ["bin/sync_ldap.sh", get_config(:user), get_config(:password)])
 
     # never keep these atoms around
     HiveService.delete_atom(atom.id)
