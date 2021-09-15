@@ -36,9 +36,9 @@ defmodule HiveMonitor.Handlers.LdapHandler do
   end
 
   def handle_atom(%HiveAtom{application: "z", context: "staff", process: "sync_ldap"} = atom) do
+    HiveService.delete_atom(atom.id)
     Logger.info("Synchronizing LDAP servers...")
     sync_ldap()
-    HiveService.delete_atom(atom.id)
   end
 
   def sync_ldap do
