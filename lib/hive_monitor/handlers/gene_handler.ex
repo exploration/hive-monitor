@@ -2,12 +2,10 @@ defmodule HiveMonitor.Handlers.GeneHandler do
   @moduledoc """
   Forward an atom to the Gene app's incoming_atom endpoint.
 
-  Atoms can be forwarded to both staging (de-activated by default) +
-  production (activated by default) servers, behind the following
-  configuration:
+  Atoms can be routed to staging instead of production, if the following
+  configuration flag is set:
 
       config :hive_monitor, HiveMonitor.Handlers.GeneHandler,
-        send_to_production: true,
         send_to_staging: true
   """
 
@@ -33,17 +31,16 @@ defmodule HiveMonitor.Handlers.GeneHandler do
       {"Content-Type", "application/x-www-form-urlencoded"}
     ]
 
-    if get_config(:send_to_staging) do
-      HTTPoison.post!(@staging_url, body, headers)
+    %{status_code: status_code} = cond do
+      get_config(:send_to_staging) ->
+        HTTPoison.post!(@staging_url, body, headers)
+      get_config(:send_to_production, true) ->
+       HTTPoison.post!(@production_url, body, headers)
     end
 
-    if get_config(:send_to_production, true) do
-      %{status_code: status_code} = HTTPoison.post!(@production_url, body, headers)
-
-      case Enum.member?(200..299, status_code) do
-        true -> {:ok, :success}
-        false -> :error
-      end
+    case Enum.member?(200..299, status_code) do
+      true -> {:ok, :success}
+      false -> :error
     end
   end
 
