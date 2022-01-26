@@ -35,7 +35,7 @@ defmodule HiveMonitor.Handlers.GeneHandler do
       get_config(:send_to_staging) ->
         HTTPoison.post!(@staging_url, body, headers)
       get_config(:send_to_production, true) ->
-       HTTPoison.post!(@production_url, body, headers)
+        HTTPoison.post!(@production_url, body, headers)
     end
 
     case Enum.member?(200..299, status_code) do

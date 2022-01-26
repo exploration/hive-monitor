@@ -1,7 +1,5 @@
 defmodule HiveMonitor.StagnantAtomChecker do
   @moduledoc """
-  Alert via chat when atoms aren't getting received when routed
-
   The Stagnant Atom Checker exists because sometimes systems that receive HIVE atoms fail to parse them properly + mark them as "received". This means that subsequent calls `HiveMonitor.Router.handle_missed_atoms/0` will end up returning the same set of... stagnant... atoms. So we want to be able to tell that this is happening + get a warning about it!
 
   Each time that `HiveMonitor.Router.handle_missed_atoms/0` is run, we keep track of the atoms that were missed. If those atoms are the same between multiple runs, then they are "stagnant".
@@ -10,8 +8,6 @@ defmodule HiveMonitor.StagnantAtomChecker do
   use GenServer
 
   require Logger
-
-  alias ExploComm.Chat
 
   @typedoc """
   The stagnant atom checker holds two sets of Atoms: the previous run, and the current run, of `HiveMonitor.Router.handle_missed_atom()`.
@@ -120,10 +116,6 @@ defmodule HiveMonitor.StagnantAtomChecker do
           "WARNING (#{HiveMonitor.application_name()}) stagnant atoms detected: #{
             inspect(stagnant_atom_ids)
           }"
-
-        unless Application.get_env(:hive_monitor, :disable_chat_alerts) do
-          Chat.send_notification(msg, Application.get_env(:hive_monitor, :default_chat_url))
-        end
 
         Logger.info(fn -> msg end)
     end

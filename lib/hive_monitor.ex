@@ -17,7 +17,6 @@ defmodule HiveMonitor do
       # Monitor-specific setup
       config :hive_monitor,
         hive_socket_token: "your token",
-        default_chat_url: "https://chat.googleapis.com/somethin"
         
       # We also need to configure HIVE service, natch.
       config :hive_service,
@@ -32,8 +31,6 @@ defmodule HiveMonitor do
         # The amount of time within which your initial batch of Crons will get
         # randomly started:
         cron_init_spread: :timer.minutes(3),
-        # Set this to `true` if you don't want system alerts going out over chat
-        disable_chat_alerts: false,
         # Set this to `true` if you don't use the PorticoBuffer
         disable_portico_buffer: false,
         router_config: "output of HiveMonitor.Router.get_config()"

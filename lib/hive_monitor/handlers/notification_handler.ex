@@ -6,9 +6,6 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
       {
         message: String (required)
 
-        chat: Boolean (true if sending a chat message)
-        chat_url: String (optional Google Chat URL endpoint)
-
         sms_numbers: [String] (optional list of sms phone numbers of recipients)
 
         emails: [String] (optional list of email addresses of recipients)
@@ -19,7 +16,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
 
   @behaviour HiveMonitor.Handler
   require Logger
-  alias ExploComm.{Chat, Mandrill, Twilio}
+  alias ExploComm.{Mandrill, Twilio}
 
   @doc false
   @impl true
@@ -27,7 +24,7 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
 
   @doc """
   Inspect the atom for information about what types of notifications
-  to send, then route to the appropriate system (SMS, Email, Chat).
+  to send, then route to the appropriate system (SMS, Email).
   """
   @impl true
   def handle_atom(%HiveAtom{} = atom) do
@@ -35,7 +32,6 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
       {:ok, data} ->
         run_if_not_empty(
           data,
-          chat: :send_chat_notifications,
           sms_numbers: :send_sms_notifications,
           emails: :send_email_notifications
         )
@@ -51,20 +47,6 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
     HiveService.delete_atom(atom.id)
 
     true
-  end
-
-  @doc false
-  def send_chat_notifications(data) do
-    message = data["message"]
-    url = Map.get(data, "chat_url", Application.get_env(:hive_monitor, :default_chat_url))
-    {:ok, response} = Chat.send_notification(message, url)
-    status = parse_status_code(response.status_code)
-
-    if status == {:ok, :sent} do
-      Logger.info(fn -> "#{HiveMonitor.application_name()} chat notification(s) sent" end)
-    end
-
-    status
   end
 
   @doc false
@@ -123,20 +105,14 @@ defmodule HiveMonitor.Handlers.NotificationHandler do
     Enum.map(key_function_tuples, fn {key, function} ->
       key = Atom.to_string(key)
 
-      case {key, Map.get(data, key)} do
-        {"chat", true} ->
-          apply(__MODULE__, function, [data])
-
-        _ ->
-          with {:ok, recipients} <- Map.fetch(data, key),
-               true <- is_list(recipients),
-               recipients <- strip_empty_strings(recipients),
-               true <- Enum.count(recipients) > 0 do
-            apply(__MODULE__, function, [data])
-          else
-            false -> {:error, :empty_recipients}
-            _ -> {:error, :invalid_recipients}
-          end
+      with {:ok, recipients} <- Map.fetch(data, key),
+           true <- is_list(recipients),
+           recipients <- strip_empty_strings(recipients),
+           true <- Enum.count(recipients) > 0 do
+        apply(__MODULE__, function, [data])
+      else
+        false -> {:error, :empty_recipients}
+        _ -> {:error, :invalid_recipients}
       end
     end)
   end

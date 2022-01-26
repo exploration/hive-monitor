@@ -42,8 +42,8 @@ config :hive_monitor,
   # default_chat_url: "https://chat.googleapis.com/somethin"
   # disable_chat_alerts: true,
   # disable_portico_buffer: true,
-  # hive_socket_token: "your token",
-  log_unrecognized_atoms: true,
+  hive_socket_token: "xaDeqPCwnwMzGSRq3RIaEgmmQR85Kmqe5Fa6vQhEqGLkMe8HW6bO7hwUJLYqj6z",
+  log_unrecognized_atoms: false,
   router_config:
     %{
       # {"explo", "notification", "create"} => [HiveMonitor.Handlers.NotificationHandler],
@@ -54,8 +54,8 @@ config :hive_monitor,
 # token_gene: "",
 # token_kitchen: ""
 
-# config :hive_service,
-#  hive_api_token: "your token"
+config :hive_service,
+  hive_api_token: "G0iIkduflP4wMmSRO8x8KLzk1EZIYIYnIo7sl7y5GQYuQ44XCgYaMcfh7RJVHhr"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

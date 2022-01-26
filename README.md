@@ -19,7 +19,6 @@ some API token variables:
     # Monitor-specific setup
     config :hive_monitor,
       hive_socket_token: "your token",
-      default_chat_url: "https://chat.googleapis.com/somethin"
       
     # We also need to configure HIVE service, natch.
     config :hive_service,
